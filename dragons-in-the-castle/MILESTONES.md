@@ -10,3 +10,8 @@
 Next: playable lobby and reconnect UI, full round UI, PWA and end-to-end checks. Local commits only; no push or deployment.
 
 Milestone 1 verified: 15 engine tests passed; authenticated API creation returned a persistent six-player demo lobby.
+
+## 2 — Lobby and guest flow
+Complete: create/join/settings forms, persistent guest identity, polling presence, ready states, privacy cover and reconnect handling.
+Checks passed: TypeScript, homepage HTTP 200, four independent API guests joined/readied/reconnected without duplication.
+Remaining: round screens, end-to-end gameplay validation, PWA, production build.
