@@ -15,3 +15,8 @@ Milestone 1 verified: 15 engine tests passed; authenticated API creation returne
 Complete: create/join/settings forms, persistent guest identity, polling presence, ready states, privacy cover and reconnect handling.
 Checks passed: TypeScript, homepage HTTP 200, four independent API guests joined/readied/reconnected without duplication.
 Remaining: round screens, end-to-end gameplay validation, PWA, production build.
+
+## 3 — Complete gameplay loop
+Complete: role reveal, illustrated room/action choices, waiting state, private results, editable public claims, secret votes, verdicts, spectators, game-over secrets and replay.
+Checks passed: TypeScript; 15 engine tests; 3 live API integration tests covering four guests, concurrent duplicate submissions, hidden information, lying/editing claims, reconnect, both winners, replay, deadlines and stale requests.
+Remaining: browser interaction validation, PWA, dependency review and production build.
