@@ -3,8 +3,123 @@ import { Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Settings, Result, View } from '@/lib/engine';
-export type Send = (type:string,extra?:Record<string,unknown>)=>Promise<View|undefined>;
-export function GameButton({children,onClick,disabled=false,secondary=false}:{children:React.ReactNode;onClick:()=>void;disabled?:boolean;secondary?:boolean}){return <Button className={secondary?'secondary':'primary'} onClick={onClick} disabled={disabled}>{children}</Button>}
-export function SettingsForm({value,onChange}:{value:Settings;onChange:(s:Settings)=>void}){return <div className="settings-grid">{([['coins','Coins per room'],['steal','Coins per theft'],['selection','Selection · seconds'],['discussion','Discussion · seconds'],['vote','Vote · seconds']] as const).map(([key,label])=><label key={key}>{label}<input type="number" min={1} max={key==='coins'?100:key==='steal'?10:600} value={value[key]} onChange={e=>onChange({...value,[key]:Number(e.target.value)})}/></label>)}{value.dragons.map((n,i)=><label key={i}>Dragons · {['4–6','7–9','10–12'][i]} players<input type="number" min={1} max={[1,3,4][i]} value={n} onChange={e=>onChange({...value,dragons:value.dragons.map((x,j)=>j===i?Number(e.target.value):x)})}/></label>)}<label className="wide">Rooms · one per line<textarea value={value.rooms.join('\n')} onChange={e=>onChange({...value,rooms:e.target.value.split('\n')})}/></label><label className="checkrow"><Checkbox checked={value.reveal} onCheckedChange={checked=>onChange({...value,reveal:checked})}/> Reveal banished roles</label><label className="checkrow"><Checkbox checked={value.clue} onCheckedChange={checked=>onChange({...value,clue:checked})}/> Investigation action clues</label></div>}
-export function resultText(r?:Result){if(!r)return 'You missed the selection deadline. You stayed outside this round.';return `${r.others} other ${r.others===1?'player entered':'players entered'} ${r.room}. ${r.coins!==undefined?`${r.coins} coins remain.`:''}${r.action==='Guard Room'?(r.blocked?' You blocked at least one theft.':' No theft was attempted here.'):''}${r.stolen!==undefined?` You stole ${r.stolen} coins.${r.blocked?' The room was guarded.':''}`:''}${r.groups?` Actions: ${r.groups.protective} protective, ${r.groups.informational} informational, ${r.groups.unknown} unknown.`:''}`;}
-export function Gold({rooms}:{rooms:Record<string,number>}){return <div className="coin-row">{Object.entries(rooms).map(([r,n])=><span key={r}>{r}<b>{n} <Coins size={16}/></b></span>)}</div>}
+export type Send = (
+  type: string,
+  extra?: Record<string, unknown>,
+) => Promise<View | undefined>;
+export function GameButton({
+  children,
+  onClick,
+  disabled = false,
+  secondary = false,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  secondary?: boolean;
+}) {
+  return (
+    <Button
+      className={secondary ? 'secondary' : 'primary'}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {children}
+    </Button>
+  );
+}
+export function SettingsForm({
+  value,
+  onChange,
+}: {
+  value: Settings;
+  onChange: (s: Settings) => void;
+}) {
+  return (
+    <div className="settings-grid">
+      {(
+        [
+          ['coins', 'Coins per room'],
+          ['steal', 'Coins per theft'],
+          ['selection', 'Selection · seconds'],
+          ['discussion', 'Discussion · seconds'],
+          ['vote', 'Vote · seconds'],
+        ] as const
+      ).map(([key, label]) => (
+        <label key={key}>
+          {label}
+          <input
+            type="number"
+            min={1}
+            max={key === 'coins' ? 100 : key === 'steal' ? 10 : 600}
+            value={value[key]}
+            onChange={(e) =>
+              onChange({ ...value, [key]: Number(e.target.value) })
+            }
+          />
+        </label>
+      ))}
+      {value.dragons.map((n, i) => (
+        <label key={i}>
+          Dragons · {['4–6', '7–9', '10–12'][i]} players
+          <input
+            type="number"
+            min={1}
+            max={[1, 3, 4][i]}
+            value={n}
+            onChange={(e) =>
+              onChange({
+                ...value,
+                dragons: value.dragons.map((x, j) =>
+                  j === i ? Number(e.target.value) : x,
+                ),
+              })
+            }
+          />
+        </label>
+      ))}
+      <label className="wide">
+        Rooms · one per line
+        <textarea
+          value={value.rooms.join('\n')}
+          onChange={(e) =>
+            onChange({ ...value, rooms: e.target.value.split('\n') })
+          }
+        />
+      </label>
+      <label className="checkrow">
+        <Checkbox
+          checked={value.reveal}
+          onCheckedChange={(checked) => onChange({ ...value, reveal: checked })}
+        />{' '}
+        Reveal banished roles
+      </label>
+      <label className="checkrow">
+        <Checkbox
+          checked={value.clue}
+          onCheckedChange={(checked) => onChange({ ...value, clue: checked })}
+        />{' '}
+        Investigation action clues
+      </label>
+    </div>
+  );
+}
+export function resultText(r?: Result) {
+  if (!r)
+    return 'You missed the selection deadline. You stayed outside this round.';
+  return `${r.others} other ${r.others === 1 ? 'player entered' : 'players entered'} ${r.room}. ${r.coins !== undefined ? `${r.coins} coins remain.` : ''}${r.action === 'Guard Room' ? (r.blocked ? ' You blocked at least one theft.' : ' No theft was attempted here.') : ''}${r.stolen !== undefined ? ` You stole ${r.stolen} coins.${r.blocked ? ' The room was guarded.' : ''}` : ''}${r.groups ? ` Actions: ${r.groups.protective} protective, ${r.groups.informational} informational, ${r.groups.unknown} unknown.` : ''}`;
+}
+export function Gold({ rooms }: { rooms: Record<string, number> }) {
+  return (
+    <div className="coin-row">
+      {Object.entries(rooms).map(([r, n]) => (
+        <span key={r}>
+          {r}
+          <b>
+            {n} <Coins size={16} />
+          </b>
+        </span>
+      ))}
+    </div>
+  );
+}
