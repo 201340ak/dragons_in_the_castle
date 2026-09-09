@@ -55,3 +55,9 @@ Complete: direct name/code join form, secondary hosting with optional settings, 
 Checks: TypeScript and lint; 17 engine/PWA tests; 3 live API integration tests; web and static mobile builds; local homepage HTTP 200. Browser checked at 390×844: entry, demo lobby, ready/start, room selection, action selection, seal and private result, private info drawer, and screen cover/return during phase advancement. The privacy cover removes both drawer and underlying game controls from the accessibility tree. Corrected stretched radio indicators found during visual inspection.
 
 Remaining: user feedback on the new interaction design; hosted deployment and native packaging remain outside this local milestone. No push or deployment.
+
+## 7 — Secret review and publication preparation
+
+Complete: fetched GitHub refs, Gitleaks full-history scan of six commits (no findings), historical sensitive-file inventory and ignore checks, documented review scope, registered the existing app for Sites hosting with its D1 binding.
+Checks: TypeScript, lint, 17 engine/PWA tests and production build pass.
+Remaining: upload exact source/build, publish the working prototype and verify the hosted API. Local databases and scanner reports are excluded.
