@@ -1,5 +1,11 @@
 # Dragons in the Castle
 
+## Hosted prototype
+
+Open https://dragons-in-the-castle.alexisdawnkennedy.chatgpt.site in a phone or desktop browser. Enter a name and choose **Try a demo** to play with five simulated companions. Tap **I'm ready**, then **Start the game**. During a demo, **More → Finish this phase** advances the clock. For multiplayer, the host creates a room and shares its code; each player opens the same website on their own device.
+
+The link is public and requires no account. Hosted games use a separate managed D1 database; local test databases were not uploaded. This is a prototype for demonstrations, not a hardened public service. See SECURITY-REVIEW.md for the pre-publication secret review.
+
 A local, playable 4–12 player social-deduction MVP. React 19 + TypeScript + Tailwind + Base UI/shadcn, served by Vinext (Next.js-compatible) and a Cloudflare Worker. D1/SQLite is the authoritative persistent store. No Supabase account or external credentials are needed locally.
 
 ## Run locally

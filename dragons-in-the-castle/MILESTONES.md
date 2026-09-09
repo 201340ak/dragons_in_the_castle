@@ -61,3 +61,11 @@ Remaining: user feedback on the new interaction design; hosted deployment and na
 Complete: fetched GitHub refs, Gitleaks full-history scan of six commits (no findings), historical sensitive-file inventory and ignore checks, documented review scope, registered the existing app for Sites hosting with its D1 binding.
 Checks: TypeScript, lint, 17 engine/PWA tests and production build pass.
 Remaining: upload exact source/build, publish the working prototype and verify the hosted API. Local databases and scanner reports are excluded.
+
+## 8 — Hosted prototype
+
+Complete: published the full Worker and static assets through Sites with a fresh managed D1 database and public link. A separate app-root source snapshot preserves the existing GitHub repository layout and history. On Windows, used the packaging helper's own prepare-site-build.cjs validator plus native tar because Bash is unavailable; archive includes exactly one migration tree and no local database files.
+
+Checks: hosted homepage returns HTTP 200; all three live API tests pass against the published URL, covering private roles, concurrent submissions, claims, voting, replay, both winning paths, deadlines, and stale requests. Gitleaks scan of the exact publication source also reports no leaks.
+
+Remaining outside this demonstration release: stronger edge abuse controls, retention/cleanup, broader load testing, and native packaging. Public URL: https://dragons-in-the-castle.alexisdawnkennedy.chatgpt.site
