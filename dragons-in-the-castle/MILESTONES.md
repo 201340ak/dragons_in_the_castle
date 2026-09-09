@@ -40,3 +40,9 @@ Verification:
 - Fixed duplicate database binding in production output; local production preview applies migrations into separate SQLite storage so it can run beside development safely.
 
 Remaining outside the local MVP: hosted deployment, edge abuse limits/load testing/operations, and native platform packaging/signing/device testing. No push or deployment performed. Development server remains on http://localhost:3000.
+
+## 5 — Compact player controller
+Complete: single-column game surface, persistent room/phase/timer, bottom drawers for players/private results/rules, accessible modal controls, privacy cover unmounts drawers, retained castle palette and illustration.
+Checks: TypeScript, lint, all 17 engine/PWA tests pass.
+Remaining: simplify entry and selection flow; validate web/mobile builds. No push or deployment.
+

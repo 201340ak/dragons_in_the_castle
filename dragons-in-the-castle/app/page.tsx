@@ -1,4 +1,5 @@
 'use client';
+import './controller.css';
 import { useEffect, useState } from 'react';
 import { Castle, EyeOff, Eye, LockKeyhole } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ export default function Home() {
     return () => document.removeEventListener('visibilitychange', protect);
   }, []);
   return (
-    <main>
+    <main className="controller-app">
       <header inert={hidden}>
         <a className="brand" href="/">
           <Castle /> DRAGONS <span>IN THE CASTLE</span>
@@ -56,7 +57,7 @@ export default function Home() {
             </Button>
           </section>
         ) : state.game ? (
-          <Session {...state} game={state.game}>
+          <Session {...state} game={state.game} privacyHidden={hidden}>
             <Round
               key={`${state.game.round}-${state.game.phase}`}
               game={state.game}
@@ -91,3 +92,5 @@ export default function Home() {
     </main>
   );
 }
+
+
