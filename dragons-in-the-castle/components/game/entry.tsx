@@ -1,7 +1,7 @@
 'use client';
-/* oxlint-disable react/react-compiler -- Hydrate the device nickname from external browser storage after SSR. */
+/* oxlint-disable react/react-compiler -- Hydrate the nickname from browser storage after SSR. */
 import { useEffect, useState } from 'react';
-import { ArrowRight, Users, Sparkles, Shield, DoorOpen } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { defaults } from '@/lib/engine';
 import { SettingsForm, type Send } from './shared';
@@ -14,10 +14,10 @@ export function Entry({
   busy: boolean;
   error: string;
 }) {
-  const [screen, setScreen] = useState('home'),
-    [name, setName] = useState(''),
-    [code, setCode] = useState(''),
-    [config, setConfig] = useState(defaults);
+  const [creating, setCreating] = useState(false);
+  const [name, setName] = useState('');
+  const [code, setCode] = useState('');
+  const [config, setConfig] = useState(defaults);
   useEffect(() => {
     setName(localStorage.getItem('castle-name') || '');
   }, []);
@@ -31,135 +31,96 @@ export function Entry({
     });
   };
   return (
-    <>
-      <section className="home">
-        <div className="intro">
-          <span className="eyebrow gold">THE CASTLE GATES ARE OPEN</span>
-          <h1>
-            Trust your friends.
-            <br />
-            <em>Question everything.</em>
-          </h1>
-          <p>
-            Wizards protect the gold. Dragons hide among them.
-            <br />
-            Who will you believe when night falls?
-          </p>
-          <div className="art">
-            <img
-              src="/castle.png"
-              alt="A storybook castle with warm lit rooms and a dragon overhead"
-            />
+    <section className="home">
+      <div className="entry-banner">
+        <img src="/castle.png" alt="A moonlit castle beneath a dragon" />
+        <span>Friends. Gold. A few good lies.</span>
+      </div>
+      <div className="panel gate">
+        <h1 className="entry-title">
+          {creating ? 'Host a game' : 'You’re in. Almost.'}
+        </h1>
+        <p>
+          {creating
+            ? 'Gather 4–12 players. Everyone uses their own phone.'
+            : 'Enter your name and the code from your host.'}
+        </p>
+        {error && (
+          <div className="error" role="alert">
+            {error}
           </div>
-          <div className="facts">
-            <span>
-              <Users size={17} /> 4–12 players
-            </span>
-            <span>
-              <Shield size={17} /> Secret roles
-            </span>
-            <span>
-              <Sparkles size={17} /> No account needed
-            </span>
-          </div>
-        </div>
-        <aside className="panel gate">
-          <span className="eyebrow">YOUR STORY STARTS HERE</span>
-          <h2>
-            {screen === 'create'
-              ? 'Prepare your castle'
-              : screen === 'join'
-                ? 'Find your fellowship'
-                : 'Enter the castle'}
-          </h2>
-          <p className="muted">Gather your friends. Keep your secrets.</p>
-          {error && (
-            <div className="error" role="alert">
-              {error}
-            </div>
-          )}
+        )}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            enter(creating ? 'create' : 'join');
+          }}
+        >
           <label>
-            Your adventurer name
+            Your name
             <input
               autoComplete="off"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="What shall we call you?"
+              placeholder="Your table name"
+              minLength={2}
               maxLength={20}
+              required
             />
           </label>
-          {screen === 'home' ? (
-            <>
-              <Button className="primary" onClick={() => setScreen('create')}>
-                Create a game <ArrowRight />
-              </Button>
-              <Button className="secondary" onClick={() => setScreen('join')}>
-                Join with a code <DoorOpen />
-              </Button>
-              <div className="divider">OR EXPLORE ON YOUR OWN</div>
-              <Button
-                className="quiet full"
-                disabled={busy || name.trim().length < 2}
-                onClick={() => enter('create', true)}
-              >
-                <Sparkles />{' '}
-                {busy ? 'Opening the gates…' : 'Play with simulated players'}
-              </Button>
-              <p className="tiny">
-                One device. Five companions. All the intrigue.
-              </p>
-            </>
-          ) : screen === 'join' ? (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                enter('join');
-              }}
-            >
-              <label>
-                Session code
-                <input
-                  autoCapitalize="characters"
-                  value={code}
-                  maxLength={6}
-                  onChange={(e) => setCode(e.target.value.toUpperCase())}
-                  placeholder="ABC234"
-                  className="code-input"
-                />
-              </label>
-              <Button
-                type="submit"
-                className="primary"
-                disabled={busy || name.trim().length < 2 || code.length !== 6}
-              >
-                Join the castle <ArrowRight />
-              </Button>
-            </form>
-          ) : (
-            <>
+          {creating ? (
+            <details className="entry-settings">
+              <summary>Customize game settings</summary>
               <SettingsForm value={config} onChange={setConfig} />
-              <Button
-                className="primary"
-                disabled={busy || name.trim().length < 2}
-                onClick={() => enter('create')}
-              >
-                Open the lobby <ArrowRight />
-              </Button>
-            </>
+            </details>
+          ) : (
+            <label>
+              Room code
+              <input
+                autoComplete="off"
+                autoCapitalize="characters"
+                spellCheck={false}
+                value={code}
+                maxLength={6}
+                minLength={6}
+                required
+                onChange={(e) => setCode(e.target.value.trim().toUpperCase())}
+                placeholder="ABC234"
+                className="code-input"
+              />
+            </label>
           )}
-          {screen !== 'home' && (
-            <Button
-              className="quiet full topgap"
-              onClick={() => setScreen('home')}
-            >
-              Back
-            </Button>
-          )}
-        </aside>
-      </section>
-      <footer className="footer">
-        KEEP YOUR GOLD CLOSE. YOUR SECRETS CLOSER.
-      </footer>
-    </>
+          <Button
+            type="submit"
+            className="primary full"
+            disabled={
+              busy || name.trim().length < 2 || (!creating && code.length !== 6)
+            }
+          >
+            {busy ? 'Connecting…' : creating ? 'Create room' : 'Join game'}
+            <ArrowRight />
+          </Button>
+        </form>
+        <Button
+          className="secondary full topgap"
+          disabled={busy}
+          onClick={() => setCreating(!creating)}
+        >
+          {creating ? 'Join an existing game' : 'Host a new game'}
+        </Button>
+        <div className="divider">JUST LOOKING AROUND?</div>
+        <Button
+          className="quiet full"
+          disabled={busy || name.trim().length < 2}
+          onClick={() => enter('create', true)}
+        >
+          <Sparkles />
+          Try a demo
+        </Button>
+        <p className="tiny">
+          No account needed. Demo includes five simulated players.
+        </p>
+      </div>
+    </section>
   );
 }

@@ -29,6 +29,7 @@ Remaining: browser interaction validation, PWA, dependency review and production
 Complete: install manifest and icons; offline reconnect fallback; public-only service-worker cache; static Capacitor-compatible client build; exact-origin native CORS configuration; loading/reconnect states; mobile-first entry order; keyboard labels and privacy dialog; setup and permission-model documentation. Original illustration integrated in the home screen and room cards.
 
 Verification:
+
 - 17 deterministic engine/PWA tests pass, including no private API interception by the service worker.
 - 3 live API integration tests pass on development and separately on the built production Worker.
 - TypeScript and application lint pass. Starter vendor components are intentionally excluded from lint; portable client image/link rules are documented in README.
@@ -42,7 +43,15 @@ Verification:
 Remaining outside the local MVP: hosted deployment, edge abuse limits/load testing/operations, and native platform packaging/signing/device testing. No push or deployment performed. Development server remains on http://localhost:3000.
 
 ## 5 — Compact player controller
+
 Complete: single-column game surface, persistent room/phase/timer, bottom drawers for players/private results/rules, accessible modal controls, privacy cover unmounts drawers, retained castle palette and illustration.
 Checks: TypeScript, lint, all 17 engine/PWA tests pass.
 Remaining: simplify entry and selection flow; validate web/mobile builds. No push or deployment.
 
+## 6 — Fast entry and focused choices
+
+Complete: direct name/code join form, secondary hosting with optional settings, short demo entry, two-step room/action selection with change-room control, compact touch targets, and private-drawer screen cover. Existing claims, voting, replay, and game rules remain available.
+
+Checks: TypeScript and lint; 17 engine/PWA tests; 3 live API integration tests; web and static mobile builds; local homepage HTTP 200. Browser checked at 390×844: entry, demo lobby, ready/start, room selection, action selection, seal and private result, private info drawer, and screen cover/return during phase advancement. The privacy cover removes both drawer and underlying game controls from the accessibility tree. Corrected stretched radio indicators found during visual inspection.
+
+Remaining: user feedback on the new interaction design; hosted deployment and native packaging remain outside this local milestone. No push or deployment.

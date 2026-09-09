@@ -57,7 +57,12 @@ export default function Home() {
             </Button>
           </section>
         ) : state.game ? (
-          <Session {...state} game={state.game} privacyHidden={hidden}>
+          <Session
+            {...state}
+            game={state.game}
+            privacyHidden={hidden}
+            coverScreen={() => setHidden(true)}
+          >
             <Round
               key={`${state.game.round}-${state.game.phase}`}
               game={state.game}
@@ -92,5 +97,3 @@ export default function Home() {
     </main>
   );
 }
-
-

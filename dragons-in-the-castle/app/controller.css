@@ -1,65 +1,387 @@
 /* A compact controller layout, shared by web and the mobile bundle. */
-.controller-app { max-width: 600px; margin: 0 auto; padding: 0 16px 110px; }
-.controller-app > header { padding: 18px 0; gap: 12px; margin: 0; }
-.controller-app .brand { font-size: 15px; gap: 7px; }
-.controller-app .brand svg { width: 22px; }
-.controller-app .brand span { font-size: 9px; }
-.controller-app header > .eyebrow, .controller-app .connection { display: none; }
-.controller-app .header-actions .quiet { font-size: 12px; padding: 8px; }
-.controller-app .game-shell { margin: 0; padding: 0; }
-.controller-status, .controller-phase { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.controller-status { border-top: 1px solid #34465b; padding-top: 12px; }
-.controller-name { font-size: 14px; overflow-wrap: anywhere; text-align: right; }
-.controller-app .room-code { font-size: 18px; letter-spacing: .15em; color: #efd098; }
-.controller-phase { padding: 16px 2px; font-size: 13px; color: #bfccda; }
-.controller-clock { display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; color: #efd098; }
-.controller-app .panel { padding: 24px; border-radius: 20px; box-shadow: none; }
-.controller-app h2 { font-size: clamp(26px, 7vw, 34px); line-height: 1.15; margin: 10px 0 14px; }
-.controller-app p { font-size: 15px; line-height: 1.55; }
-.controller-app .eyebrow { font-size: 10px; letter-spacing: .15em; }
-.controller-app .primary, .controller-sheet .primary { background: #edbf71; color: #172536; box-shadow: none; border: 1px solid #edbf71; min-height: 52px; border-radius: 12px; font-weight: 700; }
-.controller-app .secondary, .controller-sheet .secondary { min-height: 48px; border-radius: 12px; }
-.controller-app .quiet, .controller-sheet .quiet { min-height: 44px; }
-.controller-app .panel > .row.wrap { align-items: stretch; flex-direction: column; }
-.controller-app .player-grid { grid-template-columns: 1fr 1fr; gap: 8px; margin: 18px 0; }
-.controller-app .player-tile { padding: 10px 8px; gap: 7px; min-width: 0; }
-.controller-app .player-tile strong { font-size: 13px; overflow-wrap: anywhere; }
-.controller-app .player-tile small { font-size: 10px; }
-.controller-app .player-tile .avatar { width: 28px; height: 28px; flex-shrink: 0; font-size: 13px; }
-.controller-app .player-tile .ready, .controller-app .player-tile .pending { margin-left: auto; }
-.controller-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: min(100%, 600px); z-index: 30; display: grid; grid-template-columns: repeat(3, 1fr); padding: 10px 12px max(12px, env(safe-area-inset-bottom)); background: #142336; border-top: 1px solid #405064; }
-.controller-app .controller-nav .quiet { border: 0; border-radius: 10px; display: flex; flex-direction: column; gap: 4px; height: 60px; font-size: 12px; position: relative; }
-.controller-nav svg { width: 20px; height: 20px; }
-.controller-nav button span { position: absolute; top: 2px; right: calc(50% - 28px); color: #efd098; font-size: 10px; }
-.controller-sheet { margin: 0 auto; width: min(100%, 600px); max-height: 85dvh; overflow-y: auto; overscroll-behavior: contain; background: #1b2e44; color: #f1ebdf; border-radius: 24px 24px 0 0; padding: 28px 24px max(28px, env(safe-area-inset-bottom)); gap: 16px; }
-.controller-sheet [data-slot=sheet-title] { color: #f1ebdf; font-size: 25px; padding-right: 35px; }
-.controller-sheet [data-slot=sheet-description] { color: #becbdb; }
-.controller-sheet [data-slot=sheet-close] { min-width: 44px; min-height: 44px; }
-.controller-sheet h2 { font: 32px Georgia, serif; color: #edbf71; }
-.controller-sheet p { line-height: 1.6; }
-.controller-sheet .roster { margin: 0; padding: 12px 0; }
-.controller-sheet .player-progress { margin-left: auto; font-size: 12px; color: #edbf71; }
-.controller-sheet .private-note { border-top: 1px solid #405064; padding-top: 20px; }
-.controller-sheet summary { cursor: pointer; padding: 12px 0; }
-.controller-sheet .settings-grid { margin: 16px 0; }
-.controller-app .room-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-.controller-app .room-art { height: 85px; }
-.controller-app .room-caption { padding: 12px; }
-.controller-app .action-option { min-height: 62px; padding: 13px; }
-.controller-app .action-panel { margin-top: 18px; }
-.controller-app .section-heading { margin: 4px 0 14px; }
-.controller-app .section-heading h2 { margin: 0; }
-.controller-app .role-panel { padding: 32px 24px; }
-.controller-app .home { display: block; margin: 12px 0 0; }
-.controller-app .intro { text-align: center; }
-.controller-app .intro h1 { font-size: 30px; line-height: 1.15; margin: 12px 0; }
-.controller-app .intro > .eyebrow, .controller-app .intro > p { display: none; }
-.controller-app .art { height: 120px; margin: 16px 0; border-radius: 16px; }
-.controller-app .art img { height: 100%; width: 100%; object-fit: cover; object-position: 50% 40%; }
-.controller-app .facts { justify-content: center; font-size: 11px; gap: 12px; margin: 16px 0; }
-.controller-app .gate { margin-top: 18px; }
-.controller-app .gate > .eyebrow, .controller-app .gate > p.muted { display: none; }
-.controller-app input, .controller-app select, .controller-app textarea { font-size: 16px; }
-.controller-app .footer { margin-top: 24px; font-size: 9px; }
-@media (max-width: 360px) { .controller-app { padding-inline: 10px; } .controller-app .panel { padding: 18px; } .controller-app .facts { gap: 7px; font-size: 10px; } .controller-app .player-grid { grid-template-columns: 1fr; } }
-@media (prefers-reduced-motion: reduce) { .controller-sheet { transition: none; } }
+.controller-app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 16px 110px;
+}
+.controller-app > header {
+  padding: 18px 0;
+  gap: 12px;
+  margin: 0;
+}
+.controller-app .brand {
+  font-size: 15px;
+  gap: 7px;
+}
+.controller-app .brand svg {
+  width: 22px;
+}
+.controller-app .brand span {
+  font-size: 9px;
+}
+.controller-app header > .eyebrow,
+.controller-app .connection {
+  display: none;
+}
+.controller-app .header-actions .quiet {
+  font-size: 12px;
+  padding: 8px;
+}
+.controller-app .game-shell {
+  margin: 0;
+  padding: 0;
+}
+.controller-status,
+.controller-phase {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.controller-status {
+  border-top: 1px solid #34465b;
+  padding-top: 12px;
+}
+.controller-name {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+.controller-app .room-code {
+  font-size: 18px;
+  letter-spacing: 0.15em;
+  color: #efd098;
+}
+.controller-phase {
+  padding: 16px 2px;
+  font-size: 13px;
+  color: #bfccda;
+}
+.controller-clock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+  color: #efd098;
+}
+.controller-app .panel {
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: none;
+}
+.controller-app h2 {
+  font-size: clamp(26px, 7vw, 34px);
+  line-height: 1.15;
+  margin: 10px 0 14px;
+}
+.controller-app p {
+  font-size: 15px;
+  line-height: 1.55;
+}
+.controller-app .eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+}
+.controller-app .primary,
+.controller-sheet .primary {
+  background: #edbf71;
+  color: #172536;
+  box-shadow: none;
+  border: 1px solid #edbf71;
+  min-height: 52px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+.controller-app .secondary,
+.controller-sheet .secondary {
+  min-height: 48px;
+  border-radius: 12px;
+}
+.controller-app .quiet,
+.controller-sheet .quiet {
+  min-height: 44px;
+}
+.controller-app .panel > .row.wrap {
+  align-items: stretch;
+  flex-direction: column;
+}
+.controller-app .player-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 18px 0;
+}
+.controller-app .player-tile {
+  padding: 10px 8px;
+  gap: 7px;
+  min-width: 0;
+}
+.controller-app .player-tile strong {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.controller-app .player-tile small {
+  font-size: 10px;
+}
+.controller-app .player-tile .avatar {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+.controller-app .player-tile .ready,
+.controller-app .player-tile .pending {
+  margin-left: auto;
+}
+.controller-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100%, 600px);
+  z-index: 30;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 10px 12px max(12px, env(safe-area-inset-bottom));
+  background: #142336;
+  border-top: 1px solid #405064;
+}
+.controller-app .controller-nav .quiet {
+  border: 0;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 60px;
+  font-size: 12px;
+  position: relative;
+}
+.controller-nav svg {
+  width: 20px;
+  height: 20px;
+}
+.controller-nav button span {
+  position: absolute;
+  top: 2px;
+  right: calc(50% - 28px);
+  color: #efd098;
+  font-size: 10px;
+}
+.controller-sheet {
+  margin: 0 auto;
+  width: min(100%, 600px);
+  max-height: 85dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #1b2e44;
+  color: #f1ebdf;
+  border-radius: 24px 24px 0 0;
+  padding: 28px 24px max(28px, env(safe-area-inset-bottom));
+  gap: 16px;
+}
+.controller-sheet [data-slot='sheet-title'] {
+  color: #f1ebdf;
+  font-size: 25px;
+  padding-right: 35px;
+}
+.controller-sheet [data-slot='sheet-description'] {
+  color: #becbdb;
+}
+.controller-sheet [data-slot='sheet-close'] {
+  min-width: 44px;
+  min-height: 44px;
+}
+.controller-sheet h2 {
+  font:
+    32px Georgia,
+    serif;
+  color: #edbf71;
+}
+.controller-sheet p {
+  line-height: 1.6;
+}
+.controller-sheet .roster {
+  margin: 0;
+  padding: 12px 0;
+}
+.controller-sheet .player-progress {
+  margin-left: auto;
+  font-size: 12px;
+  color: #edbf71;
+}
+.controller-sheet .private-note {
+  border-top: 1px solid #405064;
+  padding-top: 20px;
+}
+.controller-sheet summary {
+  cursor: pointer;
+  padding: 12px 0;
+}
+.controller-sheet .settings-grid {
+  margin: 16px 0;
+}
+.controller-app .room-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.controller-app .room-art {
+  height: 85px;
+}
+.controller-app .room-caption {
+  padding: 12px;
+}
+.controller-app .action-option {
+  min-height: 62px;
+  padding: 13px;
+}
+.controller-app .action-panel {
+  margin-top: 18px;
+}
+.controller-app .section-heading {
+  margin: 4px 0 14px;
+}
+.controller-app .section-heading h2 {
+  margin: 0;
+}
+.controller-app .role-panel {
+  padding: 32px 24px;
+}
+.controller-app .home {
+  display: block;
+  margin: 12px 0 0;
+}
+.controller-app .intro {
+  text-align: center;
+}
+.controller-app .intro h1 {
+  font-size: 30px;
+  line-height: 1.15;
+  margin: 12px 0;
+}
+.controller-app .intro > .eyebrow,
+.controller-app .intro > p {
+  display: none;
+}
+.controller-app .art {
+  height: 120px;
+  margin: 16px 0;
+  border-radius: 16px;
+}
+.controller-app .art img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: 50% 40%;
+}
+.controller-app .facts {
+  justify-content: center;
+  font-size: 11px;
+  gap: 12px;
+  margin: 16px 0;
+}
+.controller-app .gate {
+  margin-top: 18px;
+}
+.controller-app .gate > .eyebrow,
+.controller-app .gate > p.muted {
+  display: none;
+}
+.controller-app input,
+.controller-app select,
+.controller-app textarea {
+  font-size: 16px;
+}
+.controller-app .footer {
+  margin-top: 24px;
+  font-size: 9px;
+}
+@media (max-width: 360px) {
+  .controller-app {
+    padding-inline: 10px;
+  }
+  .controller-app .panel {
+    padding: 18px;
+  }
+  .controller-app .facts {
+    gap: 7px;
+    font-size: 10px;
+  }
+  .controller-app .player-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .controller-sheet {
+    transition: none;
+  }
+}
+.controller-app .entry-banner {
+  height: 145px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+}
+.controller-app .entry-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 35%;
+}
+.controller-app .entry-banner span {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 25px 18px 14px;
+  background: linear-gradient(transparent, #101d2df2);
+  text-align: center;
+  font-size: 13px;
+}
+.controller-app .entry-title {
+  font:
+    32px/1.15 Georgia,
+    serif;
+  margin: 0 0 10px;
+}
+.controller-app .entry-settings summary {
+  padding: 16px 0;
+  cursor: pointer;
+}
+.controller-app .section-heading {
+  align-items: start;
+  flex-direction: column;
+  gap: 8px;
+}
+.controller-app .action-panel > .quiet {
+  margin-bottom: 16px;
+}
+.controller-app .play-main > .panel > .primary {
+  width: 100%;
+}
+.controller-app button:focus-visible,
+.controller-sheet button:focus-visible {
+  outline: 3px solid #72b8e5;
+  outline-offset: 3px;
+}
+.controller-app [data-slot='radio-group-item'] {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  padding: 0;
+}
+.controller-app .actions {
+  gap: 10px;
+  margin: 12px 0;
+}
+.controller-app .action-option > span:not([data-slot]) {
+  flex: 1;
+  min-width: 0;
+}
+.controller-app .action-option small {
+  font-size: 12px;
+  line-height: 1.4;
+}
+.controller-app .action-panel {
+  padding: 18px;
+}
+.controller-app .action-panel > .quiet {
+  margin-bottom: 0;
+}

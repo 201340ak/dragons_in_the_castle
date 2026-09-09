@@ -35,6 +35,7 @@ export function Round({
   send: Send;
   disabled: boolean;
 }) {
+  const [choosingAction, setChoosingAction] = useState(false);
   const [room, setRoom] = useState(
       game.claims[game.me.id]?.room || game.settings.rooms[0],
     ),
@@ -168,7 +169,13 @@ export function Round({
     content = (
       <>
         <div className="section-heading">
-          <h2>Where will you go?</h2>
+          <h2>
+            {game.me.choice
+              ? 'All set.'
+              : choosingAction
+                ? 'What will you do?'
+                : 'Where will you go?'}
+          </h2>
           <span>
             <LockKeyhole size={15} /> Only you will know
           </span>
@@ -199,72 +206,91 @@ export function Round({
           </div>
         ) : (
           <>
-            <RadioGroup
-              value={room}
-              onValueChange={(v) => setRoom(String(v))}
-              className="room-grid"
-              aria-label="Choose a room"
-            >
-              {game.settings.rooms.map((r, i) => {
-                const Icon = icons[i % 5];
-                return (
-                  <label
-                    key={r}
-                    htmlFor={`room-${i}`}
-                    className={`room-card ${room === r ? 'selected' : ''}`}
-                  >
-                    <div className={`room-art room-${i % 5}`}>
-                      <img src="/castle.png" alt="" />
-                      <Icon size={30} />
-                    </div>
-                    <div className="room-caption">
-                      <span>{r}</span>
-                      <RadioGroupItem id={`room-${i}`} value={r} />
-                    </div>
-                  </label>
-                );
-              })}
-            </RadioGroup>
-            <div className="panel action-panel">
-              <span className="eyebrow">CHOOSE YOUR ACTION</span>
-              <RadioGroup
-                value={action}
-                onValueChange={(v) => setAction(String(v))}
-                className="actions"
-                aria-label="Choose a secret action"
-              >
-                {ACTIONS.filter(
-                  (a) => a !== 'Steal Coins' || game.me.role === 'Dragon',
-                ).map((a, i) => {
-                  const Icon = [Coins, Shield, Search, Flame][i];
-                  return (
-                    <label
-                      key={a}
-                      htmlFor={`action-${i}`}
-                      className={`action-option ${action === a ? 'selected' : ''}`}
-                    >
-                      <Icon />
-                      <span>
-                        <strong>{a}</strong>
-                        <small>{descriptions[a]}</small>
-                      </span>
-                      <RadioGroupItem id={`action-${i}`} value={a} />
-                    </label>
-                  );
-                })}
-              </RadioGroup>
-              <div className="row wrap">
-                <p className="muted">
-                  You may change your mind until you seal your choice.
-                </p>
-                <GameButton
-                  disabled={disabled}
-                  onClick={() => void send('action', { room, action })}
+            {!choosingAction ? (
+              <>
+                <RadioGroup
+                  value={room}
+                  onValueChange={(v) => setRoom(String(v))}
+                  className="room-grid"
+                  aria-label="Choose a room"
                 >
-                  Seal my choice
-                </GameButton>
+                  {game.settings.rooms.map((r, i) => {
+                    const Icon = icons[i % 5];
+                    return (
+                      <label
+                        key={r}
+                        htmlFor={`room-${i}`}
+                        className={`room-card ${room === r ? 'selected' : ''}`}
+                      >
+                        <div className={`room-art room-${i % 5}`}>
+                          <img src="/castle.png" alt="" />
+                          <Icon size={30} />
+                        </div>
+                        <div className="room-caption">
+                          <span>{r}</span>
+                          <RadioGroupItem id={`room-${i}`} value={r} />
+                        </div>
+                      </label>
+                    );
+                  })}
+                </RadioGroup>
+                <Button
+                  className="primary full topgap"
+                  onClick={() => {
+                    setChoosingAction(true);
+                    window.scrollTo({ top: 0, behavior: 'instant' });
+                  }}
+                >
+                  Continue with {room}
+                </Button>
+              </>
+            ) : (
+              <div className="panel action-panel">
+                <Button
+                  className="quiet full"
+                  onClick={() => setChoosingAction(false)}
+                >
+                  ← Change room · {room}
+                </Button>
+                <RadioGroup
+                  value={action}
+                  onValueChange={(v) => setAction(String(v))}
+                  className="actions"
+                  aria-label="Choose a secret action"
+                >
+                  {ACTIONS.filter(
+                    (a) => a !== 'Steal Coins' || game.me.role === 'Dragon',
+                  ).map((a, i) => {
+                    const Icon = [Coins, Shield, Search, Flame][i];
+                    return (
+                      <label
+                        key={a}
+                        htmlFor={`action-${i}`}
+                        className={`action-option ${action === a ? 'selected' : ''}`}
+                      >
+                        <Icon />
+                        <span>
+                          <strong>{a}</strong>
+                          <small>{descriptions[a]}</small>
+                        </span>
+                        <RadioGroupItem id={`action-${i}`} value={a} />
+                      </label>
+                    );
+                  })}
+                </RadioGroup>
+                <div className="row wrap">
+                  <p className="muted">
+                    You may change your mind until you seal your choice.
+                  </p>
+                  <GameButton
+                    disabled={disabled}
+                    onClick={() => void send('action', { room, action })}
+                  >
+                    Seal my choice
+                  </GameButton>
+                </div>
               </div>
-            </div>
+            )}
           </>
         )}
       </>
