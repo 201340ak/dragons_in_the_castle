@@ -509,6 +509,78 @@ textarea {
   font-size: 20px;
   flex-shrink: 0;
 }
+.avatar.emoji {
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
+  font-size: 19px;
+}
+.avatar-picker {
+  border: 0;
+  padding: 0;
+  margin: 18px 0;
+}
+.avatar-picker legend {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.avatar-picker label {
+  display: inline-grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin: 3px;
+  border: 1px solid #bbaf97;
+  border-radius: 50%;
+  background: #faf5e9;
+  cursor: pointer;
+}
+.avatar-picker label.selected {
+  border-color: #8b5e27;
+  box-shadow: 0 0 0 3px #a7783040;
+}
+.avatar-picker input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  opacity: 0;
+}
+.avatar-picker span {
+  font-size: 22px;
+}
+.dev-entitlements {
+  margin-top: 24px;
+  padding: 14px;
+  border: 1px dashed #a77830;
+  border-radius: 10px;
+  background: #f7edd8;
+}
+.dev-entitlements summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+.dev-entitlements summary svg {
+  width: 18px;
+}
+.feature-preview {
+  margin-top: 14px;
+}
+.feature-preview div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #cdbfa7;
+  font-size: 13px;
+}
+.feature-preview b.enabled {
+  color: #376b43;
+}
+.feature-preview b.disabled {
+  color: #963c3d;
+}
 .a1 {
   background: #92754e;
 }

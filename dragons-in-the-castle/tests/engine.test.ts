@@ -11,8 +11,14 @@ import {
   settings,
   addBot,
   removeBot,
+  PLAYER_AVATARS,
   type Game,
 } from '../lib/engine.ts';
+void test('chosen avatars are validated and included in public player views', () => {
+  const g = create('CASTLE', 'p0', 'Player 0', {}, 0, false, PLAYER_AVATARS[3]);
+  assert.equal(view(g, 'p0', 0).players[0].avatar, PLAYER_AVATARS[3]);
+  assert.throws(() => join(g, 'p1', 'Player 1', 0, 'not-an-avatar'));
+});
 void test('host can add and remove ready bots in the lobby', () => {
   const g = create('CASTLE', 'p0', 'Player 0', {}, 0);
   addBot(g, 'p0', 1);

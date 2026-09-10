@@ -18,12 +18,41 @@ export type Phase =
 export type Player = {
   id: string;
   name: string;
+  avatar: string;
   ready: boolean;
   active: boolean;
   bot: boolean;
   role?: 'Wizard' | 'Dragon';
   seen: number;
 };
+export const PLAYER_NAMES = [
+  'Alina',
+  'Aldric',
+  'Bramble',
+  'Cedric',
+  'Elowen',
+  'Fable',
+  'Juniper',
+  'Mira',
+  'Nim',
+  'Orin',
+  'Pip',
+  'Rowan',
+  'Tamsin',
+  'Thalia',
+  'Wren',
+  'Zander',
+] as const;
+export const PLAYER_AVATARS = [
+  '🧙',
+  '🛡️',
+  '🏹',
+  '🗝️',
+  '📜',
+  '🦉',
+  '⚔️',
+  '🧭',
+] as const;
 export type Settings = {
   coins: number;
   steal: number;
@@ -76,19 +105,7 @@ export type Game = {
   demo: boolean;
   events: { at: number; text: string }[];
 };
-const BOT_NAMES = [
-  'Elowen',
-  'Bramble',
-  'Rowan',
-  'Mira',
-  'Aldric',
-  'Juniper',
-  'Pip',
-  'Tamsin',
-  'Orin',
-  'Nim',
-  'Fable',
-] as const;
+const BOT_NAMES = PLAYER_NAMES;
 export const defaults: Settings = {
   coins: 10,
   steal: 2,
@@ -150,6 +167,7 @@ export function create(
   input: Partial<Settings>,
   now: number,
   demo = false,
+  avatar?: string,
 ): Game {
   const g: Game = {
     code,
@@ -165,7 +183,7 @@ export function create(
     demo,
     events: [],
   };
-  join(g, id, name, now);
+  join(g, id, name, now, avatar);
   if (demo) for (let i = 0; i < 5; i++) addBot(g, id, now);
   return g;
 }
@@ -183,6 +201,7 @@ export function addBot(g: Game, hostId: string, now: number) {
   g.players.push({
     id: `bot-${number}`,
     name,
+    avatar: PLAYER_AVATARS[number % PLAYER_AVATARS.length],
     ready: true,
     active: true,
     bot: true,
@@ -196,7 +215,13 @@ export function removeBot(g: Game, hostId: string, botId: string) {
   ensure(index >= 0, 'Choose a bot to remove.');
   g.players.splice(index, 1);
 }
-export function join(g: Game, id: string, name: string, now: number) {
+export function join(
+  g: Game,
+  id: string,
+  name: string,
+  now: number,
+  avatar?: string,
+) {
   const p = g.players.find((p) => p.id === id);
   if (p) {
     p.seen = now;
@@ -214,9 +239,14 @@ export function join(g: Game, id: string, name: string, now: number) {
     !g.players.some((p) => p.name.toLowerCase() === name.trim().toLowerCase()),
     'That name is already taken.',
   );
+  ensure(
+    avatar === undefined || PLAYER_AVATARS.includes(avatar as never),
+    'Choose a valid avatar.',
+  );
   g.players.push({
     id,
     name: name.trim(),
+    avatar: avatar || PLAYER_AVATARS[g.players.length % PLAYER_AVATARS.length],
     ready: false,
     active: true,
     bot: false,
@@ -340,10 +370,7 @@ export function tick(g: Game, now: number) {
           result: truthful
             ? botResult(result)
             : 'I counted the coins. Nothing seemed out of place.',
-          statement:
-            result && result.others > 0
-              ? `I was not alone in the ${result.room}.`
-              : 'I did not cross paths with anyone.',
+          statement: '',
         };
       }
   if (g.phase === 'vote')
@@ -496,7 +523,7 @@ export function command(
       );
       ensure(
         typeof body.result === 'string' &&
-          body.result.length <= 240 &&
+          body.result.length <= 640 &&
           typeof body.statement === 'string' &&
           body.statement.length <= 400,
         'Keep your claim brief.',
@@ -570,9 +597,10 @@ export function view(g: Game, id: string, now: number) {
     demo: g.demo,
     winner: g.winner,
     ack: g.ack.includes(id),
-    players: g.players.map((p) => ({
+    players: g.players.map((p, index) => ({
       id: p.id,
       name: p.name,
+      avatar: p.avatar || PLAYER_AVATARS[index % PLAYER_AVATARS.length],
       ready: p.ready,
       active: p.active,
       online: p.bot || now - p.seen < 15000,

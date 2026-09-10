@@ -1,7 +1,7 @@
 'use client';
 import { Users, Check, Clock3, Bot, Minus, Plus } from 'lucide-react';
 import type { View } from '@/lib/engine';
-import { GameButton, type Send } from './shared';
+import { AvatarBadge, GameButton, type Send } from './shared';
 export function Lobby({
   game,
   send,
@@ -28,7 +28,7 @@ export function Lobby({
       <div className="player-grid">
         {game.players.map((p, i) => (
           <div key={p.id} className="player-tile">
-            <span className={`avatar a${i % 4}`}>{p.name[0]}</span>
+            <AvatarBadge player={p} index={i} />
             <div>
               <strong>
                 {p.name} {p.id === game.me.id ? '(you)' : ''}

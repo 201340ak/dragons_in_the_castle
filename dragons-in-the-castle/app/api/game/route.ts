@@ -106,6 +106,7 @@ async function handle(req: Request) {
           b.settings || {},
           now,
           b.demo === true,
+          b.avatar,
         );
         const result = await db()
           .prepare(
@@ -122,7 +123,7 @@ async function handle(req: Request) {
       'Enter a six-character session code.',
     );
     const g = await mutate(b.code, (g) => {
-      if (b.type === 'join') join(g, id, b.name, now);
+      if (b.type === 'join') join(g, id, b.name, now, b.avatar);
       else {
         ensure(
           g.players.some((p) => p.id === id),

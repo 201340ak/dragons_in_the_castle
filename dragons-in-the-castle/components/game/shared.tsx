@@ -7,6 +7,19 @@ export type Send = (
   type: string,
   extra?: Record<string, unknown>,
 ) => Promise<View | undefined>;
+export function AvatarBadge({
+  player,
+  index = 0,
+}: {
+  player: { name: string; avatar?: string };
+  index?: number;
+}) {
+  return (
+    <span className={`avatar a${index % 4} ${player.avatar ? 'emoji' : ''}`}>
+      {player.avatar || player.name[0]}
+    </span>
+  );
+}
 export function GameButton({
   children,
   onClick,

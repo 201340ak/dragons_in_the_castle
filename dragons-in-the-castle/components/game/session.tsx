@@ -9,7 +9,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import type { View } from '@/lib/engine';
-import { SettingsForm, resultText, type Send } from './shared';
+import { AvatarBadge, SettingsForm, resultText, type Send } from './shared';
 import { Lobby } from './lobby';
 const titles: Record<string, string> = {
   lobby: 'Lobby',
@@ -162,7 +162,7 @@ export function Session({
                   key={p.id}
                   className={`roster ${!p.active ? 'banished' : ''}`}
                 >
-                  <span className={`avatar a${i % 4}`}>{p.name[0]}</span>
+                  <AvatarBadge player={p} index={i} />
                   <div>
                     <strong>
                       {p.name}

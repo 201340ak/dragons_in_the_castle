@@ -18,7 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ACTIONS, type View } from '@/lib/engine';
-import { GameButton, Gold, resultText, type Send } from './shared';
+import { AvatarBadge, GameButton, Gold, resultText, type Send } from './shared';
 const descriptions: Record<string, string> = {
   'Count Coins': 'Discover how much gold remains.',
   'Guard Room': 'Stop every theft in your room.',
@@ -49,11 +49,12 @@ export function Round({
       existingClaim?.action || truthfulChoice?.action || 'Count Coins',
     ),
     [target, setTarget] = useState('skip'),
-    [claimResult, setClaimResult] = useState(
-      existingClaim?.result || truthfulResult,
-    ),
-    [statement, setStatement] = useState(
-      game.claims[game.me.id]?.statement || '',
+    [claimText, setClaimText] = useState(
+      existingClaim
+        ? [existingClaim.result, existingClaim.statement]
+            .filter(Boolean)
+            .join('\n\n')
+        : truthfulResult,
     ),
     [notice, setNotice] = useState('');
   const next = (label: string) => (
@@ -79,7 +80,7 @@ export function Round({
         <div className="player-grid">
           {game.players.map((p, i) => (
             <div className="player-tile" key={p.id}>
-              <span className={`avatar a${i % 4}`}>{p.name[0]}</span>
+              <AvatarBadge player={p} index={i} />
               <div>
                 <strong>{p.name}</strong>
                 <small className={p.role === 'Dragon' ? 'red' : 'blue'}>
@@ -337,8 +338,8 @@ export function Round({
             void send('claim', {
               room,
               action,
-              result: claimResult,
-              statement,
+              result: claimText,
+              statement: '',
             }).then((v) => {
               if (v)
                 setNotice(
@@ -369,21 +370,12 @@ export function Round({
             </label>
           </div>
           <label>
-            What I learned
-            <input
-              value={claimResult}
-              maxLength={240}
-              onChange={(e) => setClaimResult(e.target.value)}
-              placeholder="The room still had 10 coins…"
-            />
-          </label>
-          <label>
-            Anything else? <span className="muted">Optional</span>
+            What’s your account? <span className="muted">Optional</span>
             <textarea
-              value={statement}
-              maxLength={400}
-              onChange={(e) => setStatement(e.target.value)}
-              placeholder="Who else was in the Tower?"
+              value={claimText}
+              maxLength={640}
+              onChange={(e) => setClaimText(e.target.value)}
+              placeholder="The room still had 10 coins. Who else was in the Tower?"
             />
           </label>
           <Button type="submit" className="primary" disabled={disabled}>
@@ -398,8 +390,7 @@ export function Round({
               onClick={() => {
                 setRoom(truthfulChoice.room);
                 setAction(truthfulChoice.action);
-                setClaimResult(truthfulResult);
-                setStatement('');
+                setClaimText(truthfulResult);
               }}
             >
               Restore truthful account
@@ -438,7 +429,7 @@ export function Round({
                     key={p.id}
                     className={`action-option ${target === p.id ? 'selected' : ''}`}
                   >
-                    <span className="avatar">{p.name[0]}</span>
+                    <AvatarBadge player={p} />
                     <strong>
                       {p.name}
                       {p.id === game.me.id ? ' (you)' : ''}

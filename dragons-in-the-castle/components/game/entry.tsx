@@ -1,10 +1,19 @@
 'use client';
-/* oxlint-disable react/react-compiler -- Hydrate the nickname from browser storage after SSR. */
+/* oxlint-disable react/react-compiler -- Hydrate device-local entry and development preferences after SSR. */
 import { useEffect, useState } from 'react';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Bot, Crown, FlaskConical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { defaults } from '@/lib/engine';
+import { defaults, PLAYER_AVATARS, PLAYER_NAMES } from '@/lib/engine';
+import {
+  defaultDevAccount,
+  DEV_ENTITLEMENTS_ENABLED,
+  entitlementFeatures,
+  type DevAccount,
+} from '@/lib/entitlements';
 import { SettingsForm, type Send } from './shared';
+
+type Mode = 'join' | 'host' | 'bots';
+
 export function Entry({
   send,
   busy,
@@ -14,22 +23,52 @@ export function Entry({
   busy: boolean;
   error: string;
 }) {
-  const [creating, setCreating] = useState(false);
+  const [mode, setMode] = useState<Mode>('join');
   const [name, setName] = useState('');
+  const [avatar, setAvatar] = useState<string>(PLAYER_AVATARS[0]);
   const [code, setCode] = useState('');
   const [config, setConfig] = useState(defaults);
+  const [account, setAccount] = useState<DevAccount>(defaultDevAccount);
   useEffect(() => {
     setName(localStorage.getItem('castle-name') || '');
+    const savedAvatar = localStorage.getItem('castle-avatar');
+    if (PLAYER_AVATARS.includes(savedAvatar as never)) setAvatar(savedAvatar!);
+    if (DEV_ENTITLEMENTS_ENABLED) {
+      try {
+        const saved = JSON.parse(
+          localStorage.getItem('castle-dev-account') || 'null',
+        ) as DevAccount | null;
+        if (
+          saved &&
+          ['free', 'tokens', 'subscriber'].includes(saved.kind) &&
+          Number.isInteger(saved.tokens)
+        )
+          setAccount(saved);
+      } catch {}
+    }
   }, []);
-  const enter = (type: string, demo = false) => {
+  const features = entitlementFeatures(account);
+  const updateAccount = (next: DevAccount) => {
+    setAccount(next);
+    localStorage.setItem('castle-dev-account', JSON.stringify(next));
+  };
+  const enter = () => {
     localStorage.setItem('castle-name', name);
-    void send(type, {
+    localStorage.setItem('castle-avatar', avatar);
+    void send(mode === 'join' ? 'join' : 'create', {
       name,
+      avatar,
       code: code.trim().toUpperCase(),
       settings: config,
-      demo,
+      demo: mode === 'bots',
     });
   };
+  const title =
+    mode === 'host'
+      ? 'Host a game'
+      : mode === 'bots'
+        ? 'Play with bots'
+        : 'You’re in. Almost.';
   return (
     <section className="home">
       <div className="entry-banner">
@@ -37,13 +76,13 @@ export function Entry({
         <span>Friends. Gold. A few good lies.</span>
       </div>
       <div className="panel gate">
-        <h1 className="entry-title">
-          {creating ? 'Host a game' : 'You’re in. Almost.'}
-        </h1>
+        <h1 className="entry-title">{title}</h1>
         <p>
-          {creating
-            ? 'Gather 4–12 players. Everyone uses their own phone.'
-            : 'Enter your name and the code from your host.'}
+          {mode === 'host'
+            ? 'Gather friends, add bots if needed, and shape the game.'
+            : mode === 'bots'
+              ? 'Choose your castle rules, then play with five bots.'
+              : 'Choose an identity and enter the code from your host.'}
         </p>
         {error && (
           <div className="error" role="alert">
@@ -53,27 +92,49 @@ export function Entry({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            enter(creating ? 'create' : 'join');
+            enter();
           }}
         >
           <label>
             Your name
             <input
+              list="castle-names"
               autoComplete="off"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Your table name"
+              placeholder="Choose or enter a name"
               minLength={2}
               maxLength={20}
               required
             />
+            <datalist id="castle-names">
+              {PLAYER_NAMES.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </datalist>
           </label>
-          {creating ? (
-            <details className="entry-settings">
-              <summary>Customize game settings</summary>
-              <SettingsForm value={config} onChange={setConfig} />
-            </details>
-          ) : (
+          <fieldset className="avatar-picker">
+            <legend>Your avatar</legend>
+            {PLAYER_AVATARS.map((option) => (
+              <label
+                key={option}
+                className={avatar === option ? 'selected' : ''}
+              >
+                <input
+                  type="radio"
+                  name="avatar"
+                  value={option}
+                  aria-label={`Avatar ${option}`}
+                  checked={avatar === option}
+                  onChange={() => setAvatar(option)}
+                />
+                <span aria-hidden="true">{option}</span>
+              </label>
+            ))}
+          </fieldset>
+          {mode === 'join' ? (
             <label>
               Room code
               <input
@@ -89,38 +150,137 @@ export function Entry({
                 className="code-input"
               />
             </label>
+          ) : (
+            <details className="entry-settings">
+              <summary>Customize game settings</summary>
+              <SettingsForm value={config} onChange={setConfig} />
+            </details>
           )}
           <Button
             type="submit"
             className="primary full"
             disabled={
-              busy || name.trim().length < 2 || (!creating && code.length !== 6)
+              busy ||
+              name.trim().length < 2 ||
+              (mode === 'join' && code.length !== 6) ||
+              (mode === 'host' && !features.hostGames)
             }
           >
-            {busy ? 'Connecting…' : creating ? 'Create room' : 'Join game'}
-            <ArrowRight />
+            {busy
+              ? 'Connecting…'
+              : mode === 'host'
+                ? 'Create room'
+                : mode === 'bots'
+                  ? 'Start bot game'
+                  : 'Join game'}
+            {mode === 'bots' ? <Bot /> : <ArrowRight />}
           </Button>
         </form>
-        <Button
-          className="secondary full topgap"
-          disabled={busy}
-          onClick={() => setCreating(!creating)}
-        >
-          {creating ? 'Join an existing game' : 'Host a new game'}
-        </Button>
-        <div className="divider">JUST LOOKING AROUND?</div>
-        <Button
-          className="quiet full"
-          disabled={busy || name.trim().length < 2}
-          onClick={() => enter('create', true)}
-        >
-          <Sparkles />
-          Play with bots
-        </Button>
-        <p className="tiny">
-          No account needed. Bot play includes five computer-controlled players.
-        </p>
+        {mode === 'join' ? (
+          <>
+            <Button
+              className="secondary full topgap"
+              disabled={busy || !features.hostGames}
+              onClick={() => setMode('host')}
+            >
+              <Crown /> Host a new game
+            </Button>
+            {!features.hostGames && (
+              <p className="tiny">Hosting requires a token or subscription.</p>
+            )}
+            <div className="divider">OR PLAY ON YOUR OWN</div>
+            <Button
+              className="quiet full"
+              disabled={busy}
+              onClick={() => setMode('bots')}
+            >
+              <Bot /> Set up a bot game
+            </Button>
+          </>
+        ) : (
+          <Button
+            className="secondary full topgap"
+            disabled={busy}
+            onClick={() => setMode('join')}
+          >
+            Join an existing game
+          </Button>
+        )}
+        {DEV_ENTITLEMENTS_ENABLED && (
+          <DevEntitlementPanel account={account} onChange={updateAccount} />
+        )}
       </div>
     </section>
+  );
+}
+
+function DevEntitlementPanel({
+  account,
+  onChange,
+}: {
+  account: DevAccount;
+  onChange: (account: DevAccount) => void;
+}) {
+  const features = entitlementFeatures(account);
+  const entries = [
+    ['Join hosted games', features.joinGames],
+    ['Play bot games', features.botGames],
+    ['Host games', features.hostGames],
+    ['Custom host settings', features.customGameSettings],
+    ['Unlimited hosting', features.unlimitedHosting],
+  ] as const;
+  return (
+    <details className="dev-entitlements">
+      <summary>
+        <FlaskConical /> Development user state
+      </summary>
+      <label>
+        Account type
+        <select
+          value={account.kind}
+          onChange={(e) => {
+            const kind = e.target.value as DevAccount['kind'];
+            onChange({
+              kind,
+              tokens: kind === 'tokens' ? Math.max(1, account.tokens) : 0,
+            });
+          }}
+        >
+          <option value="free">Free user</option>
+          <option value="tokens">Token holder</option>
+          <option value="subscriber">Subscriber</option>
+        </select>
+      </label>
+      {account.kind === 'tokens' && (
+        <label>
+          Hosting tokens
+          <select
+            value={account.tokens}
+            onChange={(e) =>
+              onChange({ ...account, tokens: Number(e.target.value) })
+            }
+          >
+            {[0, 1, 5, 10, 20, 50, 100].map((count) => (
+              <option key={count} value={count}>
+                {count}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      <div className="feature-preview">
+        {entries.map(([label, enabled]) => (
+          <div key={label}>
+            <span>{label}</span>
+            <b className={enabled ? 'enabled' : 'disabled'}>
+              {enabled ? 'Enabled' : 'Disabled'}
+            </b>
+          </div>
+        ))}
+      </div>
+      <p className="tiny">
+        Development preview only. No purchase or subscription is created.
+      </p>
+    </details>
   );
 }
