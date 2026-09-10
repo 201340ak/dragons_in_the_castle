@@ -29,6 +29,18 @@
   font-family: Arial, Helvetica, sans-serif;
   color-scheme: dark;
 }
+:root[data-theme='light'] {
+  --background: #e9f3fa;
+  --foreground: #183149;
+  --primary: #936326;
+  --primary-foreground: #fffaf0;
+  --border: #9cb4c7;
+  --ring: #266b9b;
+  --muted: #d7e8f3;
+  --muted-foreground: #526b7c;
+  --secondary: #c8deec;
+  color-scheme: light;
+}
 * {
   box-sizing: border-box;
 }
@@ -39,6 +51,10 @@ body {
   color: var(--foreground);
   font-size: 16px;
   line-height: 1.6;
+}
+:root[data-theme='light'] body {
+  background:
+    radial-gradient(ellipse at 25% 15%, #ffffff 0, transparent 52%), #e9f3fa;
 }
 button,
 input,
@@ -575,6 +591,19 @@ details > summary {
   text-align: center;
   padding: 25px;
 }
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+.truthful-draft {
+  padding: 10px 12px;
+  border-left: 3px solid #a56e28;
+  background: #e4d7bc;
+  border-radius: 4px 8px 8px 4px;
+}
+.truth-reset {
+  margin-left: 8px;
+}
 .privacy-cover > svg {
   color: #e3b768;
   margin-bottom: 25px;
@@ -672,6 +701,15 @@ details > summary {
   }
   .header-actions .quiet svg {
     display: none;
+  }
+}
+@media (max-width: 430px) {
+  .theme-toggle span {
+    display: none;
+  }
+  .truth-reset {
+    width: 100%;
+    margin: 10px 0 0;
   }
 }
 .role-panel {
@@ -964,4 +1002,74 @@ body {
   margin: 0;
   border: 0;
   color: var(--foreground);
+}
+
+/* Theme-specific component colors stay last so they override the castle defaults. */
+:root[data-theme='light'] header {
+  border-bottom-color: #54738d2b;
+}
+:root[data-theme='light'] .brand {
+  color: #183149;
+}
+:root[data-theme='light'] .eyebrow,
+:root[data-theme='light'] .connection,
+:root[data-theme='light'] .controller-phase {
+  color: #506b7e;
+}
+:root[data-theme='light'] .controller-status {
+  border-top-color: #9cb4c7;
+}
+:root[data-theme='light'] .controller-app .room-code,
+:root[data-theme='light'] .controller-clock {
+  color: #83591f;
+}
+:root[data-theme='light'] .room-card,
+:root[data-theme='light'] .claim {
+  background: #d7e8f3;
+  border-color: #8aa9be;
+  color: #183149;
+}
+:root[data-theme='light'] .claim p,
+:root[data-theme='light'] .section-heading span,
+:root[data-theme='light'] .tag {
+  color: #526b7c;
+}
+:root[data-theme='light'] .controller-nav {
+  background: #f4f9fc;
+  border-top-color: #9cb4c7;
+  box-shadow: 0 -8px 24px #31566e16;
+}
+:root[data-theme='light'] .controller-sheet {
+  background: #f4f9fc;
+  color: #183149;
+  border-color: #9cb4c7;
+}
+:root[data-theme='light'] .controller-sheet [data-slot='sheet-title'],
+:root[data-theme='light'] .controller-sheet h2 {
+  color: #183149;
+}
+:root[data-theme='light'] .controller-sheet [data-slot='sheet-description'] {
+  color: #526b7c;
+}
+:root[data-theme='light'] .controller-sheet .private-note {
+  border-top-color: #9cb4c7;
+}
+:root[data-theme='light'] .secondary {
+  background: #315f7e !important;
+}
+:root[data-theme='light'] .empty {
+  border-color: #8aa9be;
+}
+:root[data-theme='light'] .privacy-cover {
+  background: #183149;
+  color: #f4f9fc;
+}
+:root[data-theme='light'] .privacy-cover p,
+:root[data-theme='light'] .privacy-cover .eyebrow {
+  color: #c9dbe7;
+}
+@media (max-width: 430px) {
+  .header-actions .theme-toggle svg {
+    display: block;
+  }
 }

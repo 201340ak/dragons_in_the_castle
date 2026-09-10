@@ -35,16 +35,22 @@ export function Round({
   send: Send;
   disabled: boolean;
 }) {
+  const existingClaim = game.claims[game.me.id];
+  const truthfulChoice = game.me.role === 'Wizard' ? game.me.choice : undefined;
+  const truthfulResult =
+    game.me.role === 'Wizard' && game.me.result
+      ? resultText(game.me.result)
+      : '';
   const [choosingAction, setChoosingAction] = useState(false);
   const [room, setRoom] = useState(
-      game.claims[game.me.id]?.room || game.settings.rooms[0],
+      existingClaim?.room || truthfulChoice?.room || game.settings.rooms[0],
     ),
     [action, setAction] = useState(
-      game.claims[game.me.id]?.action || 'Count Coins',
+      existingClaim?.action || truthfulChoice?.action || 'Count Coins',
     ),
     [target, setTarget] = useState('skip'),
     [claimResult, setClaimResult] = useState(
-      game.claims[game.me.id]?.result || '',
+      existingClaim?.result || truthfulResult,
     ),
     [statement, setStatement] = useState(
       game.claims[game.me.id]?.statement || '',
@@ -319,6 +325,12 @@ export function Round({
           Tell the truth. Bend it. Keep them guessing. Claims are never checked
           against your secret choice.
         </p>
+        {truthfulChoice && !existingClaim && (
+          <p className="truthful-draft">
+            Your truthful account is filled in. You can post it as-is or change
+            your story.
+          </p>
+        )}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -378,6 +390,21 @@ export function Round({
             {game.claims[game.me.id] ? 'Update my claim' : 'Post my claim'}{' '}
             <ScrollText />
           </Button>
+          {truthfulChoice && (
+            <Button
+              type="button"
+              className="quiet truth-reset"
+              disabled={disabled}
+              onClick={() => {
+                setRoom(truthfulChoice.room);
+                setAction(truthfulChoice.action);
+                setClaimResult(truthfulResult);
+                setStatement('');
+              }}
+            >
+              Restore truthful account
+            </Button>
+          )}
           {notice && <p aria-live="polite">{notice}</p>}
         </form>
       </div>

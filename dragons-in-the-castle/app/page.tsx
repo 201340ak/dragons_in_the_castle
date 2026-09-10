@@ -1,7 +1,8 @@
 'use client';
+/* oxlint-disable react/react-compiler -- Hydrate the theme preference from browser storage after SSR. */
 import './controller.css';
 import { useEffect, useState } from 'react';
-import { Castle, EyeOff, Eye, LockKeyhole } from 'lucide-react';
+import { Castle, EyeOff, Eye, LockKeyhole, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePlatform } from '@/hooks/use-platform';
 import { useGame } from '@/hooks/use-game';
@@ -10,6 +11,19 @@ import { Session } from '@/components/game/session';
 import { Round } from '@/components/game/round';
 export default function Home() {
   const state = useGame();
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  useEffect(() => {
+    const saved = localStorage.getItem('castle-theme');
+    const next = saved === 'light' ? 'light' : 'dark';
+    setTheme(next);
+    document.documentElement.dataset.theme = next;
+  }, []);
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    localStorage.setItem('castle-theme', next);
+    document.documentElement.dataset.theme = next;
+  };
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [state.game?.phase, state.game?.code]);
@@ -37,9 +51,27 @@ export default function Home() {
             <Button className="quiet" onClick={() => setHidden(true)}>
               <EyeOff /> Hide screen
             </Button>
+            <Button
+              className="quiet theme-toggle"
+              onClick={toggleTheme}
+              aria-label={`Use ${theme === 'dark' ? 'light' : 'dark'} theme`}
+            >
+              {theme === 'dark' ? <Sun /> : <Moon />}
+              <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+            </Button>
           </div>
         ) : (
-          <span className="eyebrow">A GAME OF SECRETS & SUSPICION</span>
+          <div className="header-actions entry-header-actions">
+            <span className="eyebrow">A GAME OF SECRETS & SUSPICION</span>
+            <Button
+              className="quiet theme-toggle"
+              onClick={toggleTheme}
+              aria-label={`Use ${theme === 'dark' ? 'light' : 'dark'} theme`}
+            >
+              {theme === 'dark' ? <Sun /> : <Moon />}
+              <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+            </Button>
+          </div>
         )}
       </header>
       <div inert={hidden}>

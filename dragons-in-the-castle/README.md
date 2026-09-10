@@ -64,6 +64,8 @@ No native platform projects, app-store signing, hosted backend, push or deployme
 
 Mobile layouts put entry controls first, use large touch targets and keyboard-operable selection primitives. **Hide screen** covers the view and makes the underlying page inert, including for assistive technology; switching away covers it automatically. Claims render as text, never HTML. Game-over chronicles expose all actual actions, theft outcomes, votes and final coins.
 
+Players can switch between the original dark medieval appearance and a lighter blue castle theme; the preference remains on their device. Wizard discussion forms begin with the player's truthful room, action and private result while remaining fully editable. Dragons continue to receive a plausible public cover story rather than exposing a theft.
+
 `MILESTONES.md` records checked checkpoints. All commits are local and authored as Codex because this repository initially had no Git author configuration.
 
 Production preview: after building, run `npm start -- --port 3001`. The preview applies migrations automatically into .wrangler/preview-state so the development and production processes do not contend for the same SQLite files.
