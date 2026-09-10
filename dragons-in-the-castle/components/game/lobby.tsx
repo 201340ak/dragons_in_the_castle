@@ -1,5 +1,5 @@
 'use client';
-import { Users, Check, Clock3 } from 'lucide-react';
+import { Users, Check, Clock3, Bot, Minus, Plus } from 'lucide-react';
 import type { View } from '@/lib/engine';
 import { GameButton, type Send } from './shared';
 export function Lobby({
@@ -23,7 +23,7 @@ export function Lobby({
       </div>
       <p>
         Share the code with your friends. Everyone must be ready before the host
-        starts.
+        starts. Add bots when fewer than four people are playing.
       </p>
       <div className="player-grid">
         {game.players.map((p, i) => (
@@ -37,7 +37,7 @@ export function Lobby({
                 {p.id === game.host
                   ? 'Host'
                   : p.bot
-                    ? 'Simulated player'
+                    ? 'Bot'
                     : p.online
                       ? 'In the castle'
                       : 'Reconnecting'}
@@ -46,9 +46,29 @@ export function Lobby({
             <span className={p.ready ? 'ready' : 'pending'}>
               {p.ready ? <Check size={18} /> : <Clock3 size={18} />}
             </span>
+            {game.host === game.me.id && p.bot && (
+              <button
+                type="button"
+                className="quiet"
+                disabled={disabled}
+                aria-label={`Remove ${p.name} bot`}
+                onClick={() => void send('remove-bot', { target: p.id })}
+              >
+                <Minus size={18} />
+              </button>
+            )}
           </div>
         ))}
       </div>
+      {game.host === game.me.id && game.players.length < 12 && (
+        <GameButton
+          secondary
+          disabled={disabled}
+          onClick={() => void send('add-bot')}
+        >
+          <Bot size={18} /> Add bot <Plus size={16} />
+        </GameButton>
+      )}
       <div className="row wrap">
         <GameButton disabled={disabled} onClick={() => void send('ready')}>
           {me.ready ? 'Not ready yet' : 'I’m ready'}

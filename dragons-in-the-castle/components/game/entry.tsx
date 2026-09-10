@@ -115,10 +115,10 @@ export function Entry({
           onClick={() => enter('create', true)}
         >
           <Sparkles />
-          Try a demo
+          Play with bots
         </Button>
         <p className="tiny">
-          No account needed. Demo includes five simulated players.
+          No account needed. Bot play includes five computer-controlled players.
         </p>
       </div>
     </section>

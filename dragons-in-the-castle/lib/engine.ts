@@ -76,6 +76,19 @@ export type Game = {
   demo: boolean;
   events: { at: number; text: string }[];
 };
+const BOT_NAMES = [
+  'Elowen',
+  'Bramble',
+  'Rowan',
+  'Mira',
+  'Aldric',
+  'Juniper',
+  'Pip',
+  'Tamsin',
+  'Orin',
+  'Nim',
+  'Fable',
+] as const;
 export const defaults: Settings = {
   coins: 10,
   steal: 2,
@@ -153,13 +166,35 @@ export function create(
     events: [],
   };
   join(g, id, name, now);
-  if (demo)
-    ['Elowen', 'Bramble', 'Rowan', 'Mira', 'Aldric'].forEach((name, i) => {
-      join(g, `bot-${i}`, name, now);
-      g.players.at(-1)!.bot = true;
-      g.players.at(-1)!.ready = true;
-    });
+  if (demo) for (let i = 0; i < 5; i++) addBot(g, id, now);
   return g;
+}
+export function addBot(g: Game, hostId: string, now: number) {
+  ensure(g.host === hostId, 'Only the host can add bots.');
+  ensure(g.phase === 'lobby', 'Bots can only be changed in the lobby.');
+  ensure(g.players.length < 12, 'This castle is full.');
+  const used = new Set(g.players.map((p) => p.name.toLowerCase()));
+  const name = BOT_NAMES.find(
+    (candidate) => !used.has(candidate.toLowerCase()),
+  );
+  ensure(name, 'No more bot names are available.');
+  let number = 0;
+  while (g.players.some((p) => p.id === `bot-${number}`)) number++;
+  g.players.push({
+    id: `bot-${number}`,
+    name,
+    ready: true,
+    active: true,
+    bot: true,
+    seen: now,
+  });
+}
+export function removeBot(g: Game, hostId: string, botId: string) {
+  ensure(g.host === hostId, 'Only the host can remove bots.');
+  ensure(g.phase === 'lobby', 'Bots can only be changed in the lobby.');
+  const index = g.players.findIndex((p) => p.id === botId && p.bot);
+  ensure(index >= 0, 'Choose a bot to remove.');
+  g.players.splice(index, 1);
 }
 export function join(g: Game, id: string, name: string, now: number) {
   const p = g.players.find((p) => p.id === id);
@@ -280,24 +315,49 @@ export function tick(g: Game, now: number) {
             ? Object.keys(g.rooms).find((r) => g.rooms[r] > 0) ||
               g.settings.rooms[0]
             : g.settings.rooms[index];
+        const style = (g.round + g.players.indexOf(p)) % 4;
         r.choices[p.id] = {
           room,
-          action: p.role === 'Dragon' ? 'Steal Coins' : 'Count Coins',
+          action:
+            p.role === 'Dragon'
+              ? style === 0
+                ? 'Investigate'
+                : 'Steal Coins'
+              : (['Count Coins', 'Guard Room', 'Investigate', 'Guard Room'][
+                  style
+                ] as Action),
         };
       }
   if (g.phase === 'discussion')
     for (const p of active(g).filter((p) => p.bot))
-      if (!r.claims[p.id])
+      if (!r.claims[p.id]) {
+        const choice = r.choices[p.id];
+        const result = r.results[p.id];
+        const truthful = p.role === 'Wizard' && choice && result;
         r.claims[p.id] = {
-          room: r.choices[p.id]?.room || g.settings.rooms[0],
-          action: 'Count Coins',
-          result: 'I checked the room. Nothing suspicious to report.',
-          statement: 'Who else was there?',
+          room: choice?.room || g.settings.rooms[0],
+          action: truthful ? choice.action : 'Count Coins',
+          result: truthful
+            ? botResult(result)
+            : 'I counted the coins. Nothing seemed out of place.',
+          statement:
+            result && result.others > 0
+              ? `I was not alone in the ${result.room}.`
+              : 'I did not cross paths with anyone.',
         };
+      }
   if (g.phase === 'vote')
     for (const p of active(g).filter((p) => p.bot))
-      if (!r.votes[p.id])
-        r.votes[p.id] = active(g)[g.round % active(g).length]?.id || 'skip';
+      if (!r.votes[p.id]) {
+        const candidates = active(g).filter(
+          (candidate) => candidate.id !== p.id,
+        );
+        r.votes[p.id] =
+          (g.round + g.players.indexOf(p)) % 4 === 0
+            ? 'skip'
+            : candidates[(g.round + g.players.indexOf(p)) % candidates.length]
+                ?.id || 'skip';
+      }
   const expired = now >= g.deadline;
   if (
     g.phase === 'reveal' &&
@@ -326,6 +386,15 @@ export function tick(g: Game, now: number) {
     (expired || active(g).every((p) => p.bot || g.ack.includes(p.id)))
   )
     nextRound(g, now);
+}
+function botResult(r: Result) {
+  const company = `${r.others} other ${r.others === 1 ? 'player was' : 'players were'} there.`;
+  if (r.coins !== undefined) return `${r.coins} coins remained. ${company}`;
+  if (r.action === 'Guard Room')
+    return `${r.blocked ? 'I stopped a theft.' : 'No theft was attempted.'} ${company}`;
+  if (r.groups)
+    return `I found ${r.groups.protective} protective, ${r.groups.informational} informational, and ${r.groups.unknown} unknown actions. ${company}`;
+  return company;
 }
 export function command(
   g: Game,
@@ -358,6 +427,13 @@ export function command(
       host();
       ensure(g.phase === 'lobby', 'Settings are locked during play.');
       g.settings = settings(body.settings);
+      break;
+    case 'add-bot':
+      addBot(g, id, now);
+      break;
+    case 'remove-bot':
+      ensure(typeof body.target === 'string', 'Choose a bot to remove.');
+      removeBot(g, id, body.target);
       break;
     case 'start': {
       host();
@@ -454,7 +530,7 @@ export function command(
       break;
     case 'demo-next':
       host();
-      ensure(g.demo, 'Only available in a simulated game.');
+      ensure(g.demo, 'Only available in a bot game.');
       g.deadline = now;
       break;
     case 'again':

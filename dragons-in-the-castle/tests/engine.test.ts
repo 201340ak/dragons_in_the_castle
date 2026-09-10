@@ -9,8 +9,41 @@ import {
   tick,
   view,
   settings,
+  addBot,
+  removeBot,
   type Game,
 } from '../lib/engine.ts';
+void test('host can add and remove ready bots in the lobby', () => {
+  const g = create('CASTLE', 'p0', 'Player 0', {}, 0);
+  addBot(g, 'p0', 1);
+  addBot(g, 'p0', 2);
+  assert.equal(g.players.length, 3);
+  assert(g.players.slice(1).every((p) => p.bot && p.ready));
+  removeBot(g, 'p0', g.players[1].id);
+  assert.equal(g.players.length, 2);
+  assert.throws(() => addBot(g, 'outsider', 3));
+});
+void test('bots use legal role-aware actions and never vote for themselves', () => {
+  const g = create('CASTLE', 'p0', 'Player 0', {}, 0);
+  for (let i = 0; i < 3; i++) addBot(g, 'p0', i + 1);
+  g.players[0].ready = true;
+  command(g, 'p0', { type: 'start' }, 4, () => 0.999);
+  g.players.forEach((p, i) => (p.role = i === 1 ? 'Dragon' : 'Wizard'));
+  g.deadline = 4;
+  tick(g, 5);
+  tick(g, 6);
+  const round = g.history[0];
+  for (const bot of g.players.filter((p) => p.bot)) {
+    const choice = round.choices[bot.id];
+    assert(choice);
+    if (bot.role === 'Wizard') assert.notEqual(choice.action, 'Steal Coins');
+  }
+  g.phase = 'vote';
+  g.deadline = 100;
+  tick(g, 7);
+  for (const bot of g.players.filter((p) => p.bot))
+    assert.notEqual(round.votes[bot.id], bot.id);
+});
 function game(count = 4): Game {
   const g = create('CASTLE', 'p0', 'Player 0', {}, 0);
   for (let i = 1; i < count; i++) join(g, `p${i}`, `Player ${i}`, 0);

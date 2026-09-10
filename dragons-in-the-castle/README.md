@@ -2,7 +2,7 @@
 
 ## Hosted prototype
 
-Open https://dragons-in-the-castle.alexisdawnkennedy.chatgpt.site in a phone or desktop browser. Enter a name and choose **Try a demo** to play with five simulated companions. Tap **I'm ready**, then **Start the game**. During a demo, **More → Finish this phase** advances the clock. For multiplayer, the host creates a room and shares its code; each player opens the same website on their own device.
+Open https://dragons-in-the-castle.alexisdawnkennedy.chatgpt.site in a phone or desktop browser. Enter a name and choose **Play with bots** to play with five computer-controlled companions. Tap **I'm ready**, then **Start the game**. During a bot game, **More → Finish this phase** advances the clock. For multiplayer, the host creates a room, can add bots to fill empty seats, and shares its code; each human player opens the same website on their own device.
 
 The link is public and requires no account. Hosted games use a separate managed D1 database; local test databases were not uploaded. This is a prototype for demonstrations, not a hardened public service. See SECURITY-REVIEW.md for the pre-publication secret review.
 
@@ -18,7 +18,7 @@ npm run db:migrate
 npm run dev -- --host 0.0.0.0
 ```
 
-Open http://localhost:3000. Enter a name and create a castle, join with a code, or choose **Play with simulated players**. Demo creation seeds five named companions; ready yourself and start. Demo controls advance the current phase without waiting. Bots have deliberately simple deterministic actions and votes; they do not model human strategy.
+Open http://localhost:3000. Enter a name and create a castle, join with a code, or choose **Play with bots**. Hosts can add or remove bots in the lobby, allowing one to three humans to fill the remaining seats. Bot play starts with five named companions; ready yourself and start. Bot-game controls advance the current phase without waiting. Bots use only information available to their role and employ varied, deterministic strategies; they do not model advanced human strategy.
 
 For four local human-controlled players, use separate browser profiles/private contexts or devices. Tabs in the same browser profile deliberately share one guest identity. Refreshing or rejoining the same code restores the same player. Clearing site storage loses that identity; there is no identity recovery by display name.
 
@@ -69,4 +69,3 @@ Mobile layouts put entry controls first, use large touch targets and keyboard-op
 Production preview: after building, run `npm start -- --port 3001`. The preview applies migrations automatically into .wrangler/preview-state so the development and production processes do not contend for the same SQLite files.
 
 Lint checks application code. The unmodified starter component catalog and its helper are excluded; framework-only image/link rules are disabled because this UI is also built as a static Capacitor client.
-

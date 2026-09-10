@@ -78,7 +78,7 @@ export function Session({
         <span>
           {game.phase !== 'lobby' && `Round ${game.round || 1} · `}
           {titles[game.phase]}
-          {game.demo && ' · Demo'}
+          {game.demo && ' · Bot game'}
         </span>
         {!['lobby', 'over'].includes(game.phase) && (
           <span
@@ -176,7 +176,7 @@ export function Session({
                           : p.id === game.host
                             ? 'Host'
                             : p.bot
-                              ? 'Simulated player'
+                              ? 'Bot'
                               : 'Playing'}
                     </small>
                   </div>
