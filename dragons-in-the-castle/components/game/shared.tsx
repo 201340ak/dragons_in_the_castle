@@ -53,7 +53,8 @@ export function SettingsForm({
       {(
         [
           ['coins', 'Coins per room'],
-          ['steal', 'Coins per theft'],
+          ['stealMin', 'Minimum coins per theft'],
+          ['stealMax', 'Maximum coins per theft'],
           ['selection', 'Selection · seconds'],
           ['discussion', 'Discussion · seconds'],
           ['vote', 'Vote · seconds'],
@@ -64,33 +65,23 @@ export function SettingsForm({
           <input
             type="number"
             min={1}
-            max={key === 'coins' ? 100 : key === 'steal' ? 10 : 600}
-            value={value[key]}
+            max={
+              key === 'coins'
+                ? 100
+                : key === 'stealMin' || key === 'stealMax'
+                  ? value.coins
+                  : 600
+            }
+            value={value[key] ?? value.steal}
             onChange={(e) =>
               onChange({ ...value, [key]: Number(e.target.value) })
             }
           />
         </label>
       ))}
-      {value.dragons.map((n, i) => (
-        <label key={i}>
-          Dragons · {['4–6', '7–9', '10–12'][i]} players
-          <input
-            type="number"
-            min={1}
-            max={[1, 3, 4][i]}
-            value={n}
-            onChange={(e) =>
-              onChange({
-                ...value,
-                dragons: value.dragons.map((x, j) =>
-                  j === i ? Number(e.target.value) : x,
-                ),
-              })
-            }
-          />
-        </label>
-      ))}
+      <p className="wide">
+        Dragons: 1 for 4–6 players, 2 for 7–9, 3 for 10–12.
+      </p>
       <label className="wide">
         Rooms · one per line
         <textarea

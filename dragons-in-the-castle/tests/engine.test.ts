@@ -252,7 +252,7 @@ void test('claims may lie and be edited; votes cannot be replaced', () => {
   assert.throws(() => command(g, 'p1', { type: 'vote', target: 'p0' }, 5));
 });
 void test('settings enforce minority and bounded input', () => {
-  assert.throws(() => settings({ dragons: [2, 2, 3] }));
+  assert.deepEqual(settings({ dragons: [2, 2, 3] }).dragons, [1, 2, 3]);
   assert.throws(() => settings({ rooms: ['Tower', 'Tower'] }));
   assert.throws(() => settings({ coins: -1 }));
 });
@@ -264,4 +264,68 @@ void test('play again clears secrets and returns everyone to lobby', () => {
   assert.equal(g.phase, 'lobby');
   assert.equal(g.history.length, 0);
   assert(g.players.every((p) => p.role === undefined && p.active));
+});
+
+void test('theft ranges reject invalid amounts and preserve legacy settings', () => {
+  for (const [stealMin, stealMax] of [
+    [0, 3],
+    [3, 2],
+    [1, 6],
+    [1.5, 3],
+  ])
+    assert.throws(() => settings({ coins: 5, stealMin, stealMax }));
+  assert.equal(settings({ coins: 5, steal: 2 }).stealMin, 2);
+  assert.equal(settings({ coins: 5, steal: 2 }).stealMax, 2);
+  assert.deepEqual(settings({ dragons: [3, 3, 3] }).dragons, [1, 2, 3]);
+  for (const count of [4, 6, 7, 9, 10, 12]) {
+    const g = game(count);
+    g.phase = 'over';
+    command(g, 'p0', { type: 'again' }, 2);
+    g.players.forEach((p) => (p.ready = true));
+    command(g, 'p0', { type: 'start' }, 3);
+    assert.equal(
+      g.players.filter((p) => p.role === 'Dragon').length,
+      count <= 6 ? 1 : count <= 9 ? 2 : 3,
+    );
+  }
+});
+void test('dragons choose theft amounts and remaining coins constrain the choice', () => {
+  for (const remaining of [0, 1, 3, 5]) {
+    const g = game();
+    g.settings = settings({ coins: 5, stealMin: 2, stealMax: 5 });
+    g.rooms.Tower = remaining;
+    const bounds = view(g, 'p0', 2).me.theftBounds!.Tower;
+    assert.deepEqual(bounds, { min: Math.min(2, remaining), max: remaining });
+    assert.equal(view(g, 'p1', 2).me.theftBounds, undefined);
+    assert.throws(() =>
+      command(
+        g,
+        'p0',
+        { type: 'action', room: 'Tower', action: 'Steal Coins', amount: 6 },
+        2,
+      ),
+    );
+    const amount = Math.min(3, remaining);
+    command(
+      g,
+      'p0',
+      { type: 'action', room: 'Tower', action: 'Steal Coins', amount },
+      2,
+    );
+    resolve(g, 3);
+    assert.equal(g.history[0].results.p0.stolen, amount);
+  }
+});
+void test('scarce coins are awarded by shuffled priority, not submission order', () => {
+  for (const random of [() => 0, () => 0.999]) {
+    const g = game();
+    g.rooms.Tower = 1;
+    g.history[0].choices = {
+      p0: { room: 'Tower', action: 'Steal Coins', amount: 3 },
+      p1: { room: 'Tower', action: 'Steal Coins', amount: 3 },
+    };
+    resolve(g, 2, random);
+    assert.equal(g.rooms.Tower, 0);
+    assert.equal(g.history[0].results[random() === 0 ? 'p1' : 'p0'].stolen, 1);
+  }
 });

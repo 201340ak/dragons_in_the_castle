@@ -42,6 +42,9 @@ export function Round({
       ? resultText(game.me.result)
       : '';
   const [choosingAction, setChoosingAction] = useState(false);
+  const [theftAmount, setTheftAmount] = useState(
+    game.settings.stealMin ?? game.settings.steal,
+  );
   const [room, setRoom] = useState(
       existingClaim?.room || truthfulChoice?.room || game.settings.rooms[0],
     ),
@@ -57,6 +60,10 @@ export function Round({
         : truthfulResult,
     ),
     [notice, setNotice] = useState('');
+  const bounds = game.me.theftBounds?.[room];
+  const amount = bounds
+    ? Math.max(bounds.min, Math.min(theftAmount, bounds.max))
+    : theftAmount;
   const next = (label: string) => (
     <GameButton
       disabled={disabled || game.ack}
@@ -285,13 +292,33 @@ export function Round({
                     );
                   })}
                 </RadioGroup>
+                {action === 'Steal Coins' && bounds && (
+                  <label>
+                    Coins to steal
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min={bounds.min}
+                      max={bounds.max}
+                      disabled={bounds.min === bounds.max || disabled}
+                      value={amount}
+                      onChange={(e) => setTheftAmount(Number(e.target.value))}
+                    />
+                  </label>
+                )}
                 <div className="row wrap">
                   <p className="muted">
                     You may change your mind until you seal your choice.
                   </p>
                   <GameButton
                     disabled={disabled}
-                    onClick={() => void send('action', { room, action })}
+                    onClick={() =>
+                      void send('action', {
+                        room,
+                        action,
+                        ...(action === 'Steal Coins' ? { amount } : {}),
+                      })
+                    }
                   >
                     Seal my choice
                   </GameButton>

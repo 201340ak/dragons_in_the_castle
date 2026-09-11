@@ -69,3 +69,7 @@ Complete: published the full Worker and static assets through Sites with a fresh
 Checks: hosted homepage returns HTTP 200; all three live API tests pass against the published URL, covering private roles, concurrent submissions, claims, voting, replay, both winning paths, deadlines, and stale requests. Gitleaks scan of the exact publication source also reports no leaks.
 
 Remaining outside this demonstration release: stronger edge abuse controls, retention/cleanup, broader load testing, and native packaging. Public URL: https://dragons-in-the-castle.alexisdawnkennedy.chatgpt.site
+
+## Gameplay revision — Milestone 1
+Complete: configurable minimum/maximum theft, Dragon amount selection (disabled when only one amount remains), server-side amount validation, randomized scarce-coin priority, and fixed 1/2/3 Dragon allocation. Legacy sessions/clients retain a fixed theft fallback; existing roles are unchanged. Room bounds are exposed only to active Dragons during selection.
+Checks: TypeScript, lint, 23 engine/PWA tests pass. Remaining: selection-completion regression tests, snapshot ordering, production checks and requested deployment.

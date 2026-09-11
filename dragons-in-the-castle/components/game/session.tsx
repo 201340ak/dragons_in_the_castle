@@ -234,12 +234,14 @@ export function Session({
                 </p>
                 <p>
                   {game.settings.rooms.length} rooms · {game.settings.coins}{' '}
-                  starting coins per room · {game.settings.steal} coins per
+                  starting coins per room ·{' '}
+                  {game.settings.stealMin ?? game.settings.steal}–
+                  {game.settings.stealMax ?? game.settings.steal} coins per
                   theft.
                 </p>
                 <p>
-                  {game.settings.dragons.join(' / ')} Dragons for 4–6 / 7–9 /
-                  10–12 players. Room coin counts stay secret.
+                  1 / 2 / 3 Dragons for 4–6 / 7–9 / 10–12 players. Room coin
+                  counts stay secret.
                 </p>
                 {host && game.phase === 'lobby' && (
                   <details>

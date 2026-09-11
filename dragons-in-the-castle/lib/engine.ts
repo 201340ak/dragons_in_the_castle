@@ -56,6 +56,8 @@ export const PLAYER_AVATARS = [
 export type Settings = {
   coins: number;
   steal: number;
+  stealMin: number;
+  stealMax: number;
   selection: number;
   discussion: number;
   vote: number;
@@ -64,7 +66,7 @@ export type Settings = {
   clue: boolean;
   rooms: string[];
 };
-export type Choice = { room: string; action: Action };
+export type Choice = { room: string; action: Action; amount?: number };
 export type Result = {
   room: string;
   action: Action;
@@ -109,6 +111,8 @@ const BOT_NAMES = PLAYER_NAMES;
 export const defaults: Settings = {
   coins: 10,
   steal: 2,
+  stealMin: 1,
+  stealMax: 3,
   selection: 60,
   discussion: 90,
   vote: 45,
@@ -123,6 +127,21 @@ export function ensure(value: unknown, message: string): asserts value {
 }
 export function settings(input: Partial<Settings> = {}): Settings {
   const s = { ...defaults, ...input };
+  // Legacy saved games and older clients supplied a single theft amount.
+  if (
+    input.stealMin === undefined &&
+    input.stealMax === undefined &&
+    input.steal !== undefined
+  ) {
+    s.stealMin = s.stealMax = Math.min(input.steal, s.coins);
+  }
+  if (
+    input.stealMin === undefined &&
+    input.stealMax === undefined &&
+    input.steal === undefined
+  ) {
+    s.stealMax = Math.min(s.stealMax, s.coins);
+  }
   for (const k of [
     'coins',
     'steal',
@@ -137,13 +156,14 @@ export function settings(input: Partial<Settings> = {}): Settings {
       'Choose valid coin amounts and timers (1–600 seconds).',
     );
   ensure(
-    Array.isArray(s.dragons) &&
-      s.dragons.length === 3 &&
-      s.dragons.every(
-        (n, i) => Number.isInteger(n) && n >= 1 && n <= [1, 3, 4][i],
-      ),
-    'Dragons must remain a minority in every player band.',
+    Number.isInteger(s.stealMin) &&
+      Number.isInteger(s.stealMax) &&
+      s.stealMin >= 1 &&
+      s.stealMin <= s.stealMax &&
+      s.stealMax <= s.coins,
+    'Theft range must be between 1 and the starting coins per room.',
   );
+  s.dragons = [1, 2, 3];
   ensure(
     Array.isArray(s.rooms) &&
       s.rooms.length >= 1 &&
@@ -278,12 +298,31 @@ function win(g: Game) {
   else if (!active(g).some((p) => p.role === 'Dragon')) g.winner = 'Wizards';
   if (g.winner) g.phase = 'over';
 }
-export function resolve(g: Game, now: number) {
+export function theftBounds(g: Game, room: string) {
+  const min =
+    g.settings.stealMin ?? Math.min(g.settings.steal, g.settings.coins);
+  const max = g.settings.stealMax ?? min;
+  return {
+    min: Math.min(min, g.rooms[room]),
+    max: Math.min(max, g.rooms[room]),
+  };
+}
+export function resolve(
+  g: Game,
+  now: number,
+  random: () => number = () =>
+    crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296,
+) {
   const r = current(g);
   for (const room of g.settings.rooms) {
     const entries = Object.entries(r.choices).filter(
       ([, c]) => c.room === room,
     );
+    // Shuffle at resolution, never award scarce coins by submission order.
+    for (let i = entries.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [entries[i], entries[j]] = [entries[j], entries[i]];
+    }
     const guarded = entries.some(([, c]) => c.action === 'Guard Room');
     const attempted = entries.some(([, c]) => c.action === 'Steal Coins');
     for (const [id, c] of entries) {
@@ -293,7 +332,9 @@ export function resolve(g: Game, now: number) {
         others: entries.length - 1,
       };
       if (c.action === 'Steal Coins') {
-        out.stolen = guarded ? 0 : Math.min(g.settings.steal, g.rooms[room]);
+        out.stolen = guarded
+          ? 0
+          : Math.min(c.amount ?? g.settings.steal, g.rooms[room]);
         g.rooms[room] -= out.stolen;
         out.blocked = guarded;
       }
@@ -348,6 +389,7 @@ export function tick(g: Game, now: number) {
         const style = (g.round + g.players.indexOf(p)) % 4;
         r.choices[p.id] = {
           room,
+          amount: theftBounds(g, room).max,
           action:
             p.role === 'Dragon'
               ? style === 0
@@ -431,6 +473,7 @@ export function command(
     settings?: Partial<Settings>;
     room?: string;
     action?: Action;
+    amount?: number;
     result?: string;
     statement?: string;
     target?: string;
@@ -474,10 +517,7 @@ export function command(
         const j = Math.floor(random() * (i + 1));
         [order[i], order[j]] = [order[j], order[i]];
       }
-      const count =
-        g.settings.dragons[
-          g.players.length <= 6 ? 0 : g.players.length <= 9 ? 1 : 2
-        ];
+      const count = g.players.length <= 6 ? 1 : g.players.length <= 9 ? 2 : 3;
       order.forEach((p, i) => {
         p.role = i < count ? 'Dragon' : 'Wizard';
         p.active = true;
@@ -506,7 +546,19 @@ export function command(
         body.action !== 'Steal Coins' || p.role === 'Dragon',
         'Wizards cannot steal.',
       );
-      r.choices[id] = { room: body.room, action: body.action };
+      if (body.action === 'Steal Coins') {
+        const bounds = theftBounds(g, body.room);
+        const amount =
+          body.amount ??
+          Math.max(bounds.min, Math.min(g.settings.steal, bounds.max));
+        ensure(
+          Number.isInteger(amount) &&
+            amount >= bounds.min &&
+            amount <= bounds.max,
+          'Choose a valid number of coins to steal.',
+        );
+        r.choices[id] = { room: body.room, action: body.action, amount };
+      } else r.choices[id] = { room: body.room, action: body.action };
       break;
     case 'claim':
       playing();
@@ -621,6 +673,12 @@ export function view(g: Game, id: string, now: number) {
               .map((p) => p.name)
           : [],
       choice: r?.choices[id],
+      theftBounds:
+        me.active && me.role === 'Dragon' && g.phase === 'selection'
+          ? Object.fromEntries(
+              g.settings.rooms.map((room) => [room, theftBounds(g, room)]),
+            )
+          : undefined,
       result: g.phase !== 'selection' ? r?.results[id] : undefined,
       voted: !!r?.votes[id],
     },
