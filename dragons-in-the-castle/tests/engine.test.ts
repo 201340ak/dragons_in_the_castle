@@ -329,3 +329,50 @@ void test('scarce coins are awarded by shuffled priority, not submission order',
     assert.equal(g.history[0].results[random() === 0 ? 'p1' : 'p0'].stolen, 1);
   }
 });
+
+void test('investigation waits for the final human and includes late entrants', () => {
+  const g = game();
+  command(g, 'p1', { type: 'action', room: 'Tower', action: 'Investigate' }, 2);
+  command(
+    g,
+    'p0',
+    { type: 'action', room: 'Treasury', action: 'Count Coins' },
+    3,
+  );
+  command(
+    g,
+    'p2',
+    { type: 'action', room: 'Library', action: 'Count Coins' },
+    4,
+  );
+  tick(g, 5);
+  assert.equal(g.phase, 'selection');
+  assert.equal(view(g, 'p1', 5).me.result, undefined);
+  assert.deepEqual(g.history[0].results, {});
+  command(g, 'p3', { type: 'action', room: 'Tower', action: 'Count Coins' }, 6);
+  assert.equal(g.phase, 'results');
+  assert.equal(view(g, 'p1', 6).me.result?.others, 1);
+  const frozen = JSON.stringify(g.history[0].results);
+  assert.throws(() =>
+    command(
+      g,
+      'p3',
+      { type: 'action', room: 'Treasury', action: 'Count Coins' },
+      7,
+    ),
+  );
+  assert.throws(() => resolve(g, 7));
+  assert.equal(JSON.stringify(g.history[0].results), frozen);
+});
+void test('deadline closes selection and mixed bot games still wait for humans', () => {
+  const g = game();
+  g.players[2].bot = true;
+  g.players[3].bot = true;
+  command(g, 'p1', { type: 'action', room: 'Tower', action: 'Investigate' }, 2);
+  assert.equal(g.phase, 'selection');
+  assert.equal(view(g, 'p1', 2).me.result, undefined);
+  tick(g, g.deadline);
+  assert.equal(g.phase, 'results');
+  assert.equal(g.history[0].choices.p0, undefined);
+  assert.equal(view(g, 'p0', g.deadline).me.result, undefined);
+});

@@ -197,12 +197,14 @@ export function Round({
         {game.me.choice ? (
           <div className="panel centered">
             <LockKeyhole className="hero-icon" />
-            <h2>Your choice is sealed</h2>
+            <h2>Waiting for choices</h2>
             <p>
               {game.me.choice.room} · {game.me.choice.action}
             </p>
             <p>
-              Waiting for the remaining adventurers. Their paths stay secret.
+              {game.players.filter((p) => p.active && p.submitted).length} of{' '}
+              {game.players.filter((p) => p.active).length} choices sealed.
+              Results appear when everyone chooses or time runs out.
             </p>
             <div className="waiting-dots">
               {game.players

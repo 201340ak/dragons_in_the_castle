@@ -93,6 +93,7 @@ export type Round = {
   coins: Record<string, number>;
 };
 export type Game = {
+  revision?: number;
   code: string;
   host: string;
   players: Player[];
@@ -313,6 +314,7 @@ export function resolve(
   random: () => number = () =>
     crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296,
 ) {
+  ensure(g.phase === 'selection', 'This round has already resolved.');
   const r = current(g);
   for (const room of g.settings.rooms) {
     const entries = Object.entries(r.choices).filter(
@@ -433,10 +435,7 @@ export function tick(g: Game, now: number) {
     (expired || active(g).every((p) => p.bot || g.ack.includes(p.id)))
   )
     nextRound(g, now);
-  else if (
-    g.phase === 'selection' &&
-    (expired || active(g).every((p) => r.choices[p.id]))
-  )
+  else if (g.phase === 'selection' && selectionComplete(g, now))
     resolve(g, now);
   else if (
     g.phase === 'results' &&
@@ -639,6 +638,7 @@ export function view(g: Game, id: string, now: number) {
   ensure(me, 'You are not a member of this session.');
   const r = current(g);
   return {
+    revision: g.revision ?? 0,
     code: g.code,
     host: g.host,
     settings: g.settings,
@@ -690,5 +690,11 @@ export function view(g: Game, id: string, now: number) {
       : undefined,
     ...(g.phase === 'over' ? { history: g.history, coins: g.rooms } : {}),
   };
+}
+export function selectionComplete(g: Game, now: number) {
+  return (
+    g.phase === 'selection' &&
+    (now >= g.deadline || active(g).every((p) => !!current(g).choices[p.id]))
+  );
 }
 export type View = ReturnType<typeof view>;

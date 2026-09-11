@@ -18,6 +18,8 @@ export function useGame() {
     offset = useRef(0);
   const accept = useCallback((v: View, n: number) => {
     if (n < accepted.current) return;
+    if (latest.current?.code === v.code && v.revision < latest.current.revision)
+      return;
     accepted.current = n;
     offset.current = v.serverTime - Date.now();
     latest.current = v;

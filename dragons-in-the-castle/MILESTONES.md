@@ -73,3 +73,8 @@ Remaining outside this demonstration release: stronger edge abuse controls, rete
 ## Gameplay revision — Milestone 1
 Complete: configurable minimum/maximum theft, Dragon amount selection (disabled when only one amount remains), server-side amount validation, randomized scarce-coin priority, and fixed 1/2/3 Dragon allocation. Legacy sessions/clients retain a fixed theft fallback; existing roles are unchanged. Room bounds are exposed only to active Dragons during selection.
 Checks: TypeScript, lint, 23 engine/PWA tests pass. Remaining: selection-completion regression tests, snapshot ordering, production checks and requested deployment.
+
+## Gameplay revision — Milestone 2
+Complete: explicit all-submitted/deadline selection gate, sealed-choice progress screen, single-resolution guard, monotonic server revisions to reject outdated client snapshots, and lazy normalization of legacy saved settings without changing existing roles.
+Checks: 25 engine/PWA tests and 4 production-runtime API tests pass, including a delayed human entering the investigator's room, mixed bots/humans, concurrent actions, deadline handling, frozen results and reconnects. TypeScript/lint and web/mobile builds pass. The existing selection gate already prevented early results; bots submit immediately, so a solo demo can legitimately resolve immediately. No evidence of premature calculation was reproduced with human clients.
+Remaining: publish and verify the same tests on the hosted service. Discussion tabs/readiness and live voting are outside these two milestones.

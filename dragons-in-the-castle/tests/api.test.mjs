@@ -189,3 +189,39 @@ void test('live deadlines advance without missing players and reject stale submi
     false,
   );
 });
+
+void test('live selection stays private until the last player, then freezes', async () => {
+  const { tokens, code, g } = await group({
+    selection: 120,
+    stealMin: 2,
+    stealMax: 5,
+    coins: 5,
+  });
+  const body = {
+    type: 'action',
+    code,
+    round: g.round,
+    phase: 'selection',
+    room: 'Tower',
+    action: 'Investigate',
+  };
+  const first = await api(tokens[0], body);
+  assert.equal(first.phase, 'selection');
+  assert.equal(first.me.result, undefined);
+  await Promise.all([
+    api(tokens[1], { ...body, room: 'Library' }),
+    api(tokens[2], { ...body, room: 'Treasury' }),
+  ]);
+  const waiting = await api(tokens[0], { type: 'sync', code });
+  assert.equal(waiting.phase, 'selection');
+  assert.equal(waiting.me.result, undefined);
+  assert.equal(waiting.players.filter((p) => p.submitted).length, 3);
+  const last = await api(tokens[3], body);
+  assert.equal(last.phase, 'results');
+  const result = await api(tokens[0], { type: 'sync', code });
+  assert.equal(result.me.result.others, 1);
+  assert(result.revision > waiting.revision);
+  await api(tokens[3], { ...body, room: 'Dungeon' }, false);
+  const reconnect = await api(tokens[0], { type: 'sync', code });
+  assert.deepEqual(reconnect.me.result, result.me.result);
+});
