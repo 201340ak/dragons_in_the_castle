@@ -376,3 +376,73 @@ void test('deadline closes selection and mixed bot games still wait for humans',
   assert.equal(g.history[0].choices.p0, undefined);
   assert.equal(view(g, 'p0', g.deadline).me.result, undefined);
 });
+
+void test('discussion requires claims, permits undo and edits clear readiness', () => {
+  const g = game();
+  g.phase = 'discussion';
+  g.deadline = 100;
+  assert.throws(() =>
+    command(g, 'p0', { type: 'discussion-ready', ready: true }, 2),
+  );
+  for (const p of g.players)
+    command(
+      g,
+      p.id,
+      {
+        type: 'claim',
+        room: 'Tower',
+        action: 'Investigate',
+        result: 'A story',
+        statement: '',
+      },
+      3,
+    );
+  command(g, 'p0', { type: 'discussion-ready', ready: true }, 4);
+  assert(view(g, 'p0', 4).ack);
+  command(g, 'p0', { type: 'discussion-ready', ready: false }, 5);
+  assert(!view(g, 'p0', 5).ack);
+  command(g, 'p0', { type: 'discussion-ready', ready: true }, 6);
+  command(
+    g,
+    'p0',
+    {
+      type: 'claim',
+      room: 'Tower',
+      action: 'Investigate',
+      result: 'Edited',
+      statement: '',
+    },
+    7,
+  );
+  assert(!view(g, 'p0', 7).ack);
+  for (const p of g.players)
+    command(g, p.id, { type: 'discussion-ready', ready: true }, 8);
+  assert.equal(g.phase, 'vote');
+  assert.equal(g.ack.length, 0);
+});
+void test('discussion ignores spectators, bots are ready and missing humans wait for deadline', () => {
+  const g = game();
+  g.phase = 'discussion';
+  g.deadline = 100;
+  g.players[3].active = false;
+  g.players[2].bot = true;
+  command(
+    g,
+    'p0',
+    {
+      type: 'claim',
+      room: 'Tower',
+      action: 'Count Coins',
+      result: '',
+      statement: '',
+    },
+    2,
+  );
+  command(g, 'p0', { type: 'discussion-ready', ready: true }, 3);
+  assert.equal(g.phase, 'discussion');
+  assert.throws(() =>
+    command(g, 'p3', { type: 'discussion-ready', ready: true }, 3),
+  );
+  tick(g, 100);
+  assert.equal(g.phase, 'vote');
+});

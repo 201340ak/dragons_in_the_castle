@@ -385,3 +385,25 @@
 .controller-app .action-panel > .quiet {
   margin-bottom: 0;
 }
+.controller-app .discussion-tabs [data-slot='tabs-list'] {
+  width: 100%;
+  height: auto;
+  padding: 4px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--background);
+}
+.controller-app .discussion-tabs [data-slot='tabs-trigger'] {
+  min-height: 48px;
+  font-size: 14px;
+}
+.controller-app .discussion-ready {
+  padding: 12px 0;
+}
+.controller-app .discussion-ready p {
+  margin: 0 0 8px;
+}
+.controller-app .discussion-tabs .claims-feed {
+  margin-top: 0;
+}

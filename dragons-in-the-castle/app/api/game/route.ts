@@ -131,7 +131,16 @@ async function handle(req: Request) {
         );
         tick(g, now);
         if (b.type !== 'sync') {
-          if (['action', 'vote', 'claim', 'ack'].includes(b.type))
+          if (
+            [
+              'action',
+              'vote',
+              'claim',
+              'ack',
+              'discussion-ready',
+              'vote-intent',
+            ].includes(b.type)
+          )
             ensure(
               b.round === g.round && b.phase === g.phase,
               'The phase changed. Please try again.',

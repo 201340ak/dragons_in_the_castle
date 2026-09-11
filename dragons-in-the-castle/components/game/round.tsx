@@ -15,6 +15,7 @@ import {
   Eye,
   Trophy,
 } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ACTIONS, type View } from '@/lib/engine';
@@ -348,86 +349,118 @@ export function Round({
     );
   else if (game.phase === 'discussion')
     content = (
-      <div className="panel">
-        <span className="eyebrow">YOUR PUBLIC ACCOUNT</span>
-        <h2>What’s your story?</h2>
-        <p>
-          Tell the truth. Bend it. Keep them guessing. Claims are never checked
-          against your secret choice.
-        </p>
-        {truthfulChoice && !existingClaim && (
-          <p className="truthful-draft">
-            Your truthful account is filled in. You can post it as-is or change
-            your story.
+      <Tabs defaultValue="claim" className="discussion-tabs">
+        <TabsList aria-label="Discussion pages">
+          <TabsTrigger value="table">
+            Discussion ({Object.keys(game.claims).length})
+          </TabsTrigger>
+          <TabsTrigger value="claim">My claim</TabsTrigger>
+        </TabsList>
+        <div className="discussion-ready">
+          <p>
+            {game.players.filter((p) => p.discussionReady).length} of{' '}
+            {game.players.filter((p) => p.active).length} ready to vote
           </p>
-        )}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            void send('claim', {
-              room,
-              action,
-              result: claimText,
-              statement: '',
-            }).then((v) => {
-              if (v)
-                setNotice(
-                  'Your claim is posted. You may edit it until time runs out.',
-                );
-            });
-          }}
-        >
-          <div className="settings-grid">
-            <label>
-              I entered
-              <select value={room} onChange={(e) => setRoom(e.target.value)}>
-                {game.settings.rooms.map((r) => (
-                  <option key={r}>{r}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              I chose
-              <select
-                value={action}
-                onChange={(e) => setAction(e.target.value)}
-              >
-                {ACTIONS.slice(0, 3).map((a) => (
-                  <option key={a}>{a}</option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <label>
-            What’s your account? <span className="muted">Optional</span>
-            <textarea
-              value={claimText}
-              maxLength={640}
-              onChange={(e) => setClaimText(e.target.value)}
-              placeholder="The room still had 10 coins. Who else was in the Tower?"
-            />
-          </label>
-          <Button type="submit" className="primary" disabled={disabled}>
-            {game.claims[game.me.id] ? 'Update my claim' : 'Post my claim'}{' '}
-            <ScrollText />
+          <Button
+            className="secondary full"
+            disabled={disabled || !existingClaim}
+            onClick={() => void send('discussion-ready', { ready: !game.ack })}
+          >
+            {game.ack ? 'Keep discussing' : 'Ready to vote'}
           </Button>
-          {truthfulChoice && (
-            <Button
-              type="button"
-              className="quiet truth-reset"
-              disabled={disabled}
-              onClick={() => {
-                setRoom(truthfulChoice.room);
-                setAction(truthfulChoice.action);
-                setClaimText(truthfulResult);
+          {!existingClaim && (
+            <p className="tiny">Post your claim to get ready.</p>
+          )}
+        </div>
+        <TabsContent value="table">
+          <Claims game={game} />
+        </TabsContent>
+        <TabsContent value="claim">
+          <div className="panel">
+            <span className="eyebrow">YOUR PUBLIC ACCOUNT</span>
+            <h2>What’s your story?</h2>
+            <p>
+              Tell the truth. Bend it. Keep them guessing. Claims are never
+              checked against your secret choice.
+            </p>
+            {truthfulChoice && !existingClaim && (
+              <p className="truthful-draft">
+                Your truthful account is filled in. You can post it as-is or
+                change your story.
+              </p>
+            )}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void send('claim', {
+                  room,
+                  action,
+                  result: claimText,
+                  statement: '',
+                }).then((v) => {
+                  if (v)
+                    setNotice(
+                      'Your claim is posted. You may edit it until time runs out.',
+                    );
+                });
               }}
             >
-              Restore truthful account
-            </Button>
-          )}
-          {notice && <p aria-live="polite">{notice}</p>}
-        </form>
-      </div>
+              <div className="settings-grid">
+                <label>
+                  I entered
+                  <select
+                    value={room}
+                    onChange={(e) => setRoom(e.target.value)}
+                  >
+                    {game.settings.rooms.map((r) => (
+                      <option key={r}>{r}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  I chose
+                  <select
+                    value={action}
+                    onChange={(e) => setAction(e.target.value)}
+                  >
+                    {ACTIONS.slice(0, 3).map((a) => (
+                      <option key={a}>{a}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <label>
+                What’s your account? <span className="muted">Optional</span>
+                <textarea
+                  value={claimText}
+                  maxLength={640}
+                  onChange={(e) => setClaimText(e.target.value)}
+                  placeholder="The room still had 10 coins. Who else was in the Tower?"
+                />
+              </label>
+              <Button type="submit" className="primary" disabled={disabled}>
+                {game.claims[game.me.id] ? 'Update my claim' : 'Post my claim'}{' '}
+                <ScrollText />
+              </Button>
+              {truthfulChoice && (
+                <Button
+                  type="button"
+                  className="quiet truth-reset"
+                  disabled={disabled}
+                  onClick={() => {
+                    setRoom(truthfulChoice.room);
+                    setAction(truthfulChoice.action);
+                    setClaimText(truthfulResult);
+                  }}
+                >
+                  Restore truthful account
+                </Button>
+              )}
+              {notice && <p aria-live="polite">{notice}</p>}
+            </form>
+          </div>
+        </TabsContent>
+      </Tabs>
     );
   else if (game.phase === 'vote')
     content = (
@@ -499,32 +532,35 @@ export function Round({
   return (
     <>
       {content}
-      {['discussion', 'vote', 'verdict'].includes(game.phase) && (
-        <div className="claims-feed">
-          <div className="section-heading">
-            <h2>Whispers around the table</h2>
-            <ScrollText />
-          </div>
-          {Object.keys(game.claims).length === 0 ? (
-            <p className="empty">No claims yet. The room is listening.</p>
-          ) : (
-            Object.entries(game.claims).map(([id, c]) => (
-              <article className="claim" key={id}>
-                <div className="row">
-                  <strong>{game.players.find((p) => p.id === id)?.name}</strong>
-                  <span className="tag">PUBLIC CLAIM</span>
-                </div>
-                <p className="gold">
-                  {c.room} · {c.action}
-                </p>
-                <p>{c.result}</p>
-                {c.statement && <p>“{c.statement}”</p>}
-              </article>
-            ))
-          )}
-        </div>
-      )}
+      {['vote', 'verdict'].includes(game.phase) && <Claims game={game} />}
     </>
+  );
+}
+function Claims({ game }: { game: View }) {
+  return (
+    <div className="claims-feed">
+      <div className="section-heading">
+        <h2>Whispers around the table</h2>
+        <ScrollText />
+      </div>
+      {Object.keys(game.claims).length === 0 ? (
+        <p className="empty">No claims yet. The room is listening.</p>
+      ) : (
+        Object.entries(game.claims).map(([id, c]) => (
+          <article className="claim" key={id}>
+            <div className="row">
+              <strong>{game.players.find((p) => p.id === id)?.name}</strong>
+              <span className="tag">PUBLIC CLAIM</span>
+            </div>
+            <p className="gold">
+              {c.room} · {c.action}
+            </p>
+            <p>{c.result}</p>
+            {c.statement && <p>“{c.statement}”</p>}
+          </article>
+        ))
+      )}
+    </div>
   );
 }
 function Verdict({ game }: { game: View }) {

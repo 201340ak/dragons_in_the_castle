@@ -80,3 +80,8 @@ Checks: 25 engine/PWA tests and 4 production-runtime API tests pass, including a
 Remaining: publish and verify the same tests on the hosted service. Discussion tabs/readiness and live voting are outside these two milestones.
 
 Milestones 1–2 publication verified: Sites version 5 deployed successfully to the existing public URL. All four API regression tests also pass on the hosted service. A separate hosted two-round smoke test verified a 2–5 theft range, an explicit four-coin theft from a five-coin room, then a forced one-coin remainder and successful final theft. Both implementation commits are pushed to GitHub. Existing hosted sessions were retained; no database reset was performed. Windows hosting wrappers required the established npm build and shared prepare-site-build.cjs/native tar fallback.
+
+## Gameplay revision — Milestone 3
+Complete: accessible Discussion/My claim tabs with parent-owned drafts, ready-to-vote control with undo, shared ready counts, claims required for readiness, posted edits clear readiness, bots auto-ready and spectators excluded. Timers remain the fallback for missing players.
+Checks: TypeScript, lint and 27 engine/PWA tests. Remaining: live anonymous voting, mobile verification and deployment.
+Future consideration: timed-out seats, removal and bot replacement when leaving, with explicit session/identity rules; no behavior changed in this release.

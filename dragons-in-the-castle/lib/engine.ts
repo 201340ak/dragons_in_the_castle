@@ -442,7 +442,10 @@ export function tick(g: Game, now: number) {
     (expired || active(g).every((p) => p.bot || g.ack.includes(p.id)))
   )
     phase(g, 'discussion', now, g.settings.discussion);
-  else if (g.phase === 'discussion' && expired)
+  else if (
+    g.phase === 'discussion' &&
+    (expired || active(g).every((p) => p.bot || g.ack.includes(p.id)))
+  )
     phase(g, 'vote', now, g.settings.vote);
   else if (
     g.phase === 'vote' &&
@@ -476,6 +479,7 @@ export function command(
     result?: string;
     statement?: string;
     target?: string;
+    ready?: boolean;
   },
   now: number,
   random: () => number = Math.random,
@@ -585,6 +589,18 @@ export function command(
         result: body.result,
         statement: body.statement,
       };
+      g.ack = g.ack.filter((playerId) => playerId !== id);
+      break;
+    case 'discussion-ready':
+      playing();
+      ensure(
+        g.phase === 'discussion' && now < g.deadline,
+        'Discussion has ended.',
+      );
+      ensure(r.claims[id], 'Post a claim before getting ready to vote.');
+      ensure(typeof body.ready === 'boolean', 'Choose your readiness.');
+      g.ack = g.ack.filter((playerId) => playerId !== id);
+      if (body.ready) g.ack.push(id);
       break;
     case 'vote':
       playing();
@@ -655,6 +671,8 @@ export function view(g: Game, id: string, now: number) {
       avatar: p.avatar || PLAYER_AVATARS[index % PLAYER_AVATARS.length],
       ready: p.ready,
       active: p.active,
+      discussionReady:
+        g.phase === 'discussion' && p.active && (p.bot || g.ack.includes(p.id)),
       online: p.bot || now - p.seen < 15000,
       bot: p.bot,
       submitted: g.phase === 'vote' ? !!r?.votes[p.id] : !!r?.choices[p.id],
