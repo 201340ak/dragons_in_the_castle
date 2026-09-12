@@ -92,3 +92,7 @@ Checks: TypeScript, lint, 29 engine/PWA tests, 5 production-runtime API tests, w
 Remaining: push both milestones, deploy and verify hosted API behavior.
 
 Milestones 3–4 publication verified: Sites version 6 deployed successfully to the existing public URL. All five hosted API integration tests pass, including reversible readiness, early advancement, anonymous intention counts, locking, reconnect and stale-write rejection. Both implementation commits are pushed to GitHub. No database reset or schema change was needed. Deployment source tree was verified identical to the committed app tree before saving; an empty intermediate source snapshot was corrected before any version was saved or deployed. Remaining: future leaving/session options, account management and optional untimed play are deferred.
+
+## Castle table — Milestone 1
+Complete: replaced editable name autocomplete with a required native dropdown. Valid saved selections are restored; saved custom names require a fresh selection. Existing session identities are unchanged.
+Checks: TypeScript and lint pass. Remaining: illustrated castle board, action-card flow, browser checks and requested publication.

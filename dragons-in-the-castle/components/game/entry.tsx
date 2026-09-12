@@ -30,7 +30,8 @@ export function Entry({
   const [config, setConfig] = useState(defaults);
   const [account, setAccount] = useState<DevAccount>(defaultDevAccount);
   useEffect(() => {
-    setName(localStorage.getItem('castle-name') || '');
+    const savedName = localStorage.getItem('castle-name') || '';
+    setName(PLAYER_NAMES.some((option) => option === savedName) ? savedName : '');
     const savedAvatar = localStorage.getItem('castle-avatar');
     if (PLAYER_AVATARS.includes(savedAvatar as never)) setAvatar(savedAvatar!);
     if (DEV_ENTITLEMENTS_ENABLED) {
@@ -97,23 +98,18 @@ export function Entry({
         >
           <label>
             Your name
-            <input
-              list="castle-names"
-              autoComplete="off"
+            <select
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Choose or enter a name"
-              minLength={2}
-              maxLength={20}
               required
-            />
-            <datalist id="castle-names">
+            >
+              <option value="" disabled>Choose a name</option>
               {PLAYER_NAMES.map((option) => (
                 <option key={option} value={option}>
                   {option}
                 </option>
               ))}
-            </datalist>
+            </select>
           </label>
           <fieldset className="avatar-picker">
             <legend>Your avatar</legend>
@@ -161,7 +157,7 @@ export function Entry({
             className="primary full"
             disabled={
               busy ||
-              name.trim().length < 2 ||
+              !PLAYER_NAMES.some((option) => option === name) ||
               (mode === 'join' && code.length !== 6) ||
               (mode === 'host' && !features.hostGames)
             }
@@ -284,3 +280,4 @@ function DevEntitlementPanel({
     </details>
   );
 }
+
