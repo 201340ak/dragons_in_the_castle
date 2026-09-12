@@ -85,3 +85,8 @@ Milestones 1–2 publication verified: Sites version 5 deployed successfully to 
 Complete: accessible Discussion/My claim tabs with parent-owned drafts, ready-to-vote control with undo, shared ready counts, claims required for readiness, posted edits clear readiness, bots auto-ready and spectators excluded. Timers remain the fallback for missing players.
 Checks: TypeScript, lint and 27 engine/PWA tests. Remaining: live anonymous voting, mobile verification and deployment.
 Future consideration: timed-out seats, removal and bot replacement when leaving, with explicit session/identity rules; no behavior changed in this release.
+
+## Gameplay revision — Milestone 4
+Complete: anonymous tentative and locked vote counts, changeable intentions before locking, immutable locked votes, visible counts for locked players and spectators, Skip counts, no default choice, and circular candidate avatars. Legacy sessions tolerate missing vote intentions.
+Checks: TypeScript, lint, 29 engine/PWA tests, 5 production-runtime API tests, web/mobile builds, and 390×844 browser checks pass. Phone checks verify draft preservation, readiness, initial unselected voting, tentative counts and circular avatars. API checks cover undo, early advancement, concurrent counts, locking and stale submissions.
+Remaining: push both milestones, deploy and verify hosted API behavior.

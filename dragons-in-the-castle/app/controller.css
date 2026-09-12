@@ -407,3 +407,61 @@
 .controller-app .discussion-tabs .claims-feed {
   margin-top: 0;
 }
+.controller-app .vote-candidate {
+  display: block;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+.controller-app .vote-candidate.selected {
+  border-color: #a87529;
+  background: #e3b76820;
+}
+.controller-app .vote-candidate-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.controller-app .vote-candidate-top strong {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.controller-app .avatar {
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+.controller-app .vote-candidate .avatar {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  flex: 0 0 40px;
+}
+.controller-app .vote-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-top: 10px;
+  font-size: 14px;
+}
+.controller-app .vote-dots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.controller-app .vote-dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: block;
+}
+.controller-app .vote-dots .tentative {
+  background: #828282;
+}
+.controller-app .vote-dots .locked {
+  background: #23804b;
+}

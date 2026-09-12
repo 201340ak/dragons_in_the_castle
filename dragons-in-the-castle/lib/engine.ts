@@ -88,6 +88,7 @@ export type Round = {
   results: Record<string, Result>;
   claims: Record<string, Claim>;
   votes: Record<string, string>;
+  voteIntents?: Record<string, string>;
   totals: Record<string, number>;
   banished?: string;
   coins: Record<string, number>;
@@ -602,6 +603,17 @@ export function command(
       g.ack = g.ack.filter((playerId) => playerId !== id);
       if (body.ready) g.ack.push(id);
       break;
+    case 'vote-intent':
+      playing();
+      ensure(g.phase === 'vote' && now < g.deadline, 'Voting has ended.');
+      ensure(!r.votes[id], 'Your vote is already sealed.');
+      ensure(
+        body.target === 'skip' ||
+          active(g).some((candidate) => candidate.id === body.target),
+        'Choose an active player or Skip.',
+      );
+      (r.voteIntents ??= {})[id] = body.target!;
+      break;
     case 'vote':
       playing();
       ensure(g.phase === 'vote' && now < g.deadline, 'Voting has ended.');
@@ -613,6 +625,7 @@ export function command(
         'Choose an active player or Skip.',
       );
       r.votes[id] = body.target;
+      if (r.voteIntents) delete r.voteIntents[id];
       break;
     case 'ack':
       playing();
@@ -699,10 +712,27 @@ export function view(g: Game, id: string, now: number) {
           : undefined,
       result: g.phase !== 'selection' ? r?.results[id] : undefined,
       voted: !!r?.votes[id],
+      voteTarget:
+        g.phase === 'vote' ? r?.votes[id] || r?.voteIntents?.[id] : undefined,
     },
     claims: ['discussion', 'vote', 'verdict', 'over'].includes(g.phase)
       ? r?.claims || {}
       : {},
+    liveVotes:
+      g.phase === 'vote'
+        ? Object.fromEntries(
+            [...active(g).map((p) => p.id), 'skip'].map((target) => [
+              target,
+              {
+                tentative: active(g).filter(
+                  (p) => !r.votes[p.id] && r.voteIntents?.[p.id] === target,
+                ).length,
+                locked: active(g).filter((p) => r.votes[p.id] === target)
+                  .length,
+              },
+            ]),
+          )
+        : undefined,
     verdict: ['verdict', 'over'].includes(g.phase)
       ? { totals: r?.totals || {}, banished: r?.banished }
       : undefined,

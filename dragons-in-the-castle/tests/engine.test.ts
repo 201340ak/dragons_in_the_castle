@@ -446,3 +446,49 @@ void test('discussion ignores spectators, bots are ready and missing humans wait
   tick(g, 100);
   assert.equal(g.phase, 'vote');
 });
+
+void test('anonymous vote intentions move, lock once and survive reconnects', () => {
+  const g = game();
+  g.phase = 'vote';
+  g.deadline = 100;
+  assert.equal(view(g, 'p0', 2).me.voteTarget, undefined);
+  command(g, 'p0', { type: 'vote-intent', target: 'p1' }, 2);
+  assert.deepEqual(view(g, 'p2', 2).liveVotes?.p1, { tentative: 1, locked: 0 });
+  assert.equal(view(g, 'p2', 2).me.voteTarget, undefined);
+  assert.equal('voteIntents' in view(g, 'p2', 2), false);
+  command(g, 'p0', { type: 'vote-intent', target: 'skip' }, 3);
+  assert.deepEqual(view(g, 'p1', 3).liveVotes?.p1, { tentative: 0, locked: 0 });
+  assert.equal(view(g, 'p0', 3).me.voteTarget, 'skip');
+  command(g, 'p0', { type: 'vote', target: 'skip' }, 4);
+  assert.deepEqual(view(g, 'p1', 4).liveVotes?.skip, {
+    tentative: 0,
+    locked: 1,
+  });
+  assert.throws(() =>
+    command(g, 'p0', { type: 'vote-intent', target: 'p2' }, 5),
+  );
+  assert.throws(() => command(g, 'p0', { type: 'vote', target: 'p2' }, 5));
+  g.players[3].active = false;
+  assert.throws(() =>
+    command(g, 'p3', { type: 'vote-intent', target: 'p1' }, 5),
+  );
+  assert.throws(() =>
+    command(g, 'p1', { type: 'vote-intent', target: 'p3' }, 5),
+  );
+  assert.equal(view(g, 'p3', 5).liveVotes?.skip.locked, 1);
+});
+void test('tentative votes never count at deadline and disappear next round', () => {
+  const g = game();
+  g.phase = 'vote';
+  g.deadline = 100;
+  for (const p of g.players)
+    command(g, p.id, { type: 'vote-intent', target: 'p0' }, 2);
+  assert.equal(g.phase, 'vote');
+  tick(g, 100);
+  assert.equal(g.phase, 'verdict');
+  assert.deepEqual(g.history[0].totals, {});
+  assert.equal(view(g, 'p1', 100).liveVotes, undefined);
+  for (const p of g.players) command(g, p.id, { type: 'ack' }, 101);
+  assert.equal(g.phase, 'selection');
+  assert.equal(view(g, 'p0', 101).me.voteTarget, undefined);
+});

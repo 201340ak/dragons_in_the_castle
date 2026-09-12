@@ -225,3 +225,60 @@ void test('live selection stays private until the last player, then freezes', as
   const reconnect = await api(tokens[0], { type: 'sync', code });
   assert.deepEqual(reconnect.me.result, result.me.result);
 });
+
+void test('live discussion readiness and anonymous voting persist and reject stale writes', async () => {
+  const { tokens, code, g } = await group({ discussion: 120, vote: 120 });
+  const send = (i, type, phase, extra = {}) =>
+    api(tokens[i], { code, round: g.round, type, phase, ...extra });
+  for (let i = 0; i < 4; i++)
+    await send(i, 'action', 'selection', {
+      room: 'Tower',
+      action: 'Count Coins',
+    });
+  for (let i = 0; i < 4; i++) await send(i, 'ack', 'results');
+  for (let i = 0; i < 4; i++)
+    await send(i, 'claim', 'discussion', {
+      room: 'Tower',
+      action: 'Count Coins',
+      result: 'Story',
+      statement: '',
+    });
+  await send(0, 'discussion-ready', 'discussion', { ready: true });
+  await send(0, 'discussion-ready', 'discussion', { ready: false });
+  let state = await send(1, 'sync', 'discussion');
+  assert.equal(state.players.filter((p) => p.discussionReady).length, 0);
+  for (let i = 0; i < 4; i++)
+    state = await send(i, 'discussion-ready', 'discussion', { ready: true });
+  assert.equal(state.phase, 'vote');
+  await send(0, 'vote-intent', 'vote', { target: 'skip' });
+  const candidate = state.players[1].id;
+  await send(0, 'vote-intent', 'vote', { target: candidate });
+  await send(2, 'vote-intent', 'vote', { target: candidate });
+  state = await send(1, 'sync', 'vote');
+  assert.deepEqual(state.liveVotes[candidate], { tentative: 2, locked: 0 });
+  assert.equal(state.me.voteTarget, undefined);
+  await send(0, 'vote', 'vote', { target: candidate });
+  state = await send(0, 'sync', 'vote');
+  assert.equal(state.me.voteTarget, candidate);
+  assert.deepEqual(state.liveVotes[candidate], { tentative: 1, locked: 1 });
+  await api(
+    tokens[0],
+    {
+      type: 'vote-intent',
+      code,
+      round: g.round,
+      phase: 'vote',
+      target: 'skip',
+    },
+    false,
+  );
+  await api(
+    tokens[1],
+    { type: 'vote-intent', code, round: 0, phase: 'vote', target: 'skip' },
+    false,
+  );
+  for (let i = 1; i < 4; i++)
+    state = await send(i, 'vote', 'vote', { target: 'skip' });
+  assert.equal(state.phase, 'verdict');
+  assert.equal(state.verdict.totals.skip, 3);
+});

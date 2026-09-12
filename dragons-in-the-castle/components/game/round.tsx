@@ -1,4 +1,5 @@
 'use client';
+import { VotePanel } from './vote-panel';
 import { useState } from 'react';
 import {
   Coins,
@@ -52,7 +53,6 @@ export function Round({
     [action, setAction] = useState(
       existingClaim?.action || truthfulChoice?.action || 'Count Coins',
     ),
-    [target, setTarget] = useState('skip'),
     [claimText, setClaimText] = useState(
       existingClaim
         ? [existingClaim.result, existingClaim.statement]
@@ -143,7 +143,7 @@ export function Round({
         )}
       </div>
     );
-  else if (!game.me.active)
+  else if (!game.me.active && game.phase !== 'vote')
     content = (
       <div className="panel">
         <Eye className="hero-icon" />
@@ -463,63 +463,7 @@ export function Round({
       </Tabs>
     );
   else if (game.phase === 'vote')
-    content = (
-      <div className="panel">
-        <span className="eyebrow">ONE VOICE. ONE SECRET VOTE.</span>
-        <h2>Who should leave the castle?</h2>
-        <p>
-          A strict majority of all active players is needed. Skips and missed
-          votes never lower the threshold.
-        </p>
-        {game.me.voted ? (
-          <div className="centered">
-            <Vote className="hero-icon" />
-            <h3>Your vote is sealed</h3>
-            <p>Waiting for the castle’s decision.</p>
-          </div>
-        ) : (
-          <>
-            <RadioGroup
-              aria-label="Banishment vote"
-              value={target}
-              onValueChange={(v) => setTarget(String(v))}
-            >
-              {game.players
-                .filter((p) => p.active)
-                .map((p) => (
-                  <label
-                    key={p.id}
-                    className={`action-option ${target === p.id ? 'selected' : ''}`}
-                  >
-                    <AvatarBadge player={p} />
-                    <strong>
-                      {p.name}
-                      {p.id === game.me.id ? ' (you)' : ''}
-                    </strong>
-                    <RadioGroupItem id={`vote-${p.id}`} value={p.id} />
-                  </label>
-                ))}
-              <label
-                htmlFor="vote-skip"
-                className={`action-option ${target === 'skip' ? 'selected' : ''}`}
-              >
-                <Shield />
-                <strong>Skip this banishment</strong>
-                <RadioGroupItem id="vote-skip" value="skip" />
-              </label>
-            </RadioGroup>
-            <div className="topgap">
-              <GameButton
-                disabled={disabled}
-                onClick={() => void send('vote', { target })}
-              >
-                Seal my vote
-              </GameButton>
-            </div>
-          </>
-        )}
-      </div>
-    );
+    content = <VotePanel game={game} send={send} disabled={disabled} />;
   else
     content = (
       <div className="panel centered">
