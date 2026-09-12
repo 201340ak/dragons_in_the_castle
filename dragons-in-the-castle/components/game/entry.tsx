@@ -31,7 +31,9 @@ export function Entry({
   const [account, setAccount] = useState<DevAccount>(defaultDevAccount);
   useEffect(() => {
     const savedName = localStorage.getItem('castle-name') || '';
-    setName(PLAYER_NAMES.some((option) => option === savedName) ? savedName : '');
+    setName(
+      PLAYER_NAMES.some((option) => option === savedName) ? savedName : '',
+    );
     const savedAvatar = localStorage.getItem('castle-avatar');
     if (PLAYER_AVATARS.includes(savedAvatar as never)) setAvatar(savedAvatar!);
     if (DEV_ENTITLEMENTS_ENABLED) {
@@ -103,7 +105,9 @@ export function Entry({
               onChange={(e) => setName(e.target.value)}
               required
             >
-              <option value="" disabled>Choose a name</option>
+              <option value="" disabled>
+                Choose a name
+              </option>
               {PLAYER_NAMES.map((option) => (
                 <option key={option} value={option}>
                   {option}
@@ -280,4 +284,3 @@ function DevEntitlementPanel({
     </details>
   );
 }
-

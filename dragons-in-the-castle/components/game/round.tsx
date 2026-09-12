@@ -1,30 +1,12 @@
 'use client';
-import { CastleBoard, RoundTrack } from './castle-board';
+import { SelectionTable } from './selection-table';
 import { VotePanel } from './vote-panel';
 import { useState } from 'react';
-import {
-  Coins,
-  LockKeyhole,
-  Shield,
-  Search,
-  Flame,
-  ScrollText,
-  Check,
-  Vote,
-  Eye,
-  Trophy,
-} from 'lucide-react';
+import { Shield, Flame, ScrollText, Vote, Eye, Trophy } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ACTIONS, type View } from '@/lib/engine';
 import { AvatarBadge, GameButton, Gold, resultText, type Send } from './shared';
-const descriptions: Record<string, string> = {
-  'Count Coins': 'Discover how much gold remains.',
-  'Guard Room': 'Stop every theft in your room.',
-  Investigate: 'Learn what kinds of actions took place.',
-  'Steal Coins': 'Take gold. Keep your story straight.',
-};
 export function Round({
   game,
   send,
@@ -40,10 +22,6 @@ export function Round({
     game.me.role === 'Wizard' && game.me.result
       ? resultText(game.me.result)
       : '';
-  const [choosingAction, setChoosingAction] = useState(false);
-  const [theftAmount, setTheftAmount] = useState(
-    game.settings.stealMin ?? game.settings.steal,
-  );
   const [room, setRoom] = useState(
       existingClaim?.room || truthfulChoice?.room || game.settings.rooms[0],
     ),
@@ -58,10 +36,6 @@ export function Round({
         : truthfulResult,
     ),
     [notice, setNotice] = useState('');
-  const bounds = game.me.theftBounds?.[room];
-  const amount = bounds
-    ? Math.max(bounds.min, Math.min(theftAmount, bounds.max))
-    : theftAmount;
   const next = (label: string) => (
     <GameButton
       disabled={disabled || game.ack}
@@ -178,134 +152,7 @@ export function Round({
       </div>
     );
   else if (game.phase === 'selection')
-    content = (
-      <>
-        <div className="section-heading">
-          <h2>
-            {game.me.choice
-              ? 'All set.'
-              : choosingAction
-                ? 'What will you do?'
-                : 'Where will you go?'}
-          </h2>
-          <span>
-            <LockKeyhole size={15} /> Only you will know
-          </span>
-        </div>
-        {game.me.choice ? (
-          <div className="panel centered">
-            <LockKeyhole className="hero-icon" />
-            <h2>Waiting for choices</h2>
-            <p>
-              {game.me.choice.room} · {game.me.choice.action}
-            </p>
-            <p>
-              {game.players.filter((p) => p.active && p.submitted).length} of{' '}
-              {game.players.filter((p) => p.active).length} choices sealed.
-              Results appear when everyone chooses or time runs out.
-            </p>
-            <div className="waiting-dots">
-              {game.players
-                .filter((p) => p.active)
-                .map((p) => (
-                  <span
-                    key={p.id}
-                    title={p.name}
-                    className={p.submitted ? 'done' : ''}
-                  >
-                    {p.submitted ? <Check size={18} /> : p.name[0]}
-                  </span>
-                ))}
-            </div>
-          </div>
-        ) : (
-          <>
-            {!choosingAction ? (
-              <>
-                <RoundTrack round={game.round} role={game.me.role} sealed={false} />
-                <CastleBoard rooms={game.settings.rooms} selected={room} onSelect={setRoom}
-                  player={game.players.find((p) => p.id === game.me.id)!} disabled={disabled} />
-                <Button
-                  className="primary full topgap"
-                  onClick={() => {
-                    setChoosingAction(true);
-                    window.scrollTo({ top: 0, behavior: 'instant' });
-                  }}
-                >
-                  Continue with {room}
-                </Button>
-              </>
-            ) : (
-              <div className="panel action-panel">
-                <Button
-                  className="quiet full"
-                  onClick={() => setChoosingAction(false)}
-                >
-                  ← Change room · {room}
-                </Button>
-                <RadioGroup
-                  value={action}
-                  onValueChange={(v) => setAction(String(v))}
-                  className="actions"
-                  aria-label="Choose a secret action"
-                >
-                  {ACTIONS.filter(
-                    (a) => a !== 'Steal Coins' || game.me.role === 'Dragon',
-                  ).map((a, i) => {
-                    const Icon = [Coins, Shield, Search, Flame][i];
-                    return (
-                      <label
-                        key={a}
-                        htmlFor={`action-${i}`}
-                        className={`action-option ${action === a ? 'selected' : ''}`}
-                      >
-                        <Icon />
-                        <span>
-                          <strong>{a}</strong>
-                          <small>{descriptions[a]}</small>
-                        </span>
-                        <RadioGroupItem id={`action-${i}`} value={a} />
-                      </label>
-                    );
-                  })}
-                </RadioGroup>
-                {action === 'Steal Coins' && bounds && (
-                  <label>
-                    Coins to steal
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      min={bounds.min}
-                      max={bounds.max}
-                      disabled={bounds.min === bounds.max || disabled}
-                      value={amount}
-                      onChange={(e) => setTheftAmount(Number(e.target.value))}
-                    />
-                  </label>
-                )}
-                <div className="row wrap">
-                  <p className="muted">
-                    You may change your mind until you seal your choice.
-                  </p>
-                  <GameButton
-                    disabled={disabled}
-                    onClick={() =>
-                      void send('action', {
-                        room,
-                        action,
-                        ...(action === 'Steal Coins' ? { amount } : {}),
-                      })
-                    }
-                  >
-                    Seal my choice
-                  </GameButton>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </>
-    );
+    content = <SelectionTable game={game} send={send} disabled={disabled} />;
   else if (game.phase === 'results')
     content = (
       <div className="panel">

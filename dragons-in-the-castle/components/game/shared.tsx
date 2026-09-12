@@ -6,6 +6,7 @@ import type { Settings, Result, View } from '@/lib/engine';
 export type Send = (
   type: string,
   extra?: Record<string, unknown>,
+  onAccepted?: () => void,
 ) => Promise<View | undefined>;
 export function AvatarBadge({
   player,

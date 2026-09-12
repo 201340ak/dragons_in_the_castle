@@ -49,7 +49,11 @@ export function useGame() {
     return v as View;
   }, []);
   const send = useCallback(
-    async (type: string, extra: Record<string, unknown> = {}) => {
+    async (
+      type: string,
+      extra: Record<string, unknown> = {},
+      onAccepted?: () => void,
+    ) => {
       if (mutating.current) return;
       mutating.current = true;
       setBusy(true);
@@ -64,6 +68,14 @@ export function useGame() {
           phase: g?.phase,
           ...extra,
         });
+        if (type === 'action' && onAccepted) {
+          // Ignore older in-flight polls while the confirmed card turns over.
+          // The server has already resolved the command; this is display only.
+          accepted.current = Math.max(accepted.current, n);
+          onAccepted();
+          if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+            await new Promise((resolve) => setTimeout(resolve, 520));
+        }
         accept(v, n);
         navigator.vibrate?.(15);
         return v;
