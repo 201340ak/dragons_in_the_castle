@@ -1,12 +1,10 @@
 'use client';
+import { CastleBoard, RoundTrack } from './castle-board';
 import { VotePanel } from './vote-panel';
 import { useState } from 'react';
 import {
   Coins,
-  BookOpen,
-  Castle,
   LockKeyhole,
-  Sparkles,
   Shield,
   Search,
   Flame,
@@ -27,7 +25,6 @@ const descriptions: Record<string, string> = {
   Investigate: 'Learn what kinds of actions took place.',
   'Steal Coins': 'Take gold. Keep your story straight.',
 };
-const icons = [Coins, BookOpen, Castle, LockKeyhole, Sparkles];
 export function Round({
   game,
   send,
@@ -225,32 +222,9 @@ export function Round({
           <>
             {!choosingAction ? (
               <>
-                <RadioGroup
-                  value={room}
-                  onValueChange={(v) => setRoom(String(v))}
-                  className="room-grid"
-                  aria-label="Choose a room"
-                >
-                  {game.settings.rooms.map((r, i) => {
-                    const Icon = icons[i % 5];
-                    return (
-                      <label
-                        key={r}
-                        htmlFor={`room-${i}`}
-                        className={`room-card ${room === r ? 'selected' : ''}`}
-                      >
-                        <div className={`room-art room-${i % 5}`}>
-                          <img src="/castle.png" alt="" />
-                          <Icon size={30} />
-                        </div>
-                        <div className="room-caption">
-                          <span>{r}</span>
-                          <RadioGroupItem id={`room-${i}`} value={r} />
-                        </div>
-                      </label>
-                    );
-                  })}
-                </RadioGroup>
+                <RoundTrack round={game.round} role={game.me.role} sealed={false} />
+                <CastleBoard rooms={game.settings.rooms} selected={room} onSelect={setRoom}
+                  player={game.players.find((p) => p.id === game.me.id)!} disabled={disabled} />
                 <Button
                   className="primary full topgap"
                   onClick={() => {

@@ -96,3 +96,7 @@ Milestones 3–4 publication verified: Sites version 6 deployed successfully to 
 ## Castle table — Milestone 1
 Complete: replaced editable name autocomplete with a required native dropdown. Valid saved selections are restored; saved custom names require a fresh selection. Existing session identities are unchanged.
 Checks: TypeScript and lint pass. Remaining: illustrated castle board, action-card flow, browser checks and requested publication.
+
+## Castle table — Milestone 2
+Complete: reusable dollhouse room board with original illustrated interiors, connected room layout, custom room-label/count support, private local portrait position, round-stage track and role objective. Board inputs deliberately exclude other players' destinations and room totals.
+Checks: TypeScript/lint pass; browser verified strict dropdown, bot creation and five-room board at 390×844. Remaining: persistent map while choosing action cards, confirmed sealing animation, regression checks and deployment.
