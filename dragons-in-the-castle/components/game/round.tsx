@@ -1,4 +1,5 @@
 'use client';
+import { ResolutionTable } from './resolution-table';
 import { SelectionTable } from './selection-table';
 import { VotePanel } from './vote-panel';
 import { useState } from 'react';
@@ -11,10 +12,14 @@ export function Round({
   game,
   send,
   disabled,
+  resolutionStartedAt = null,
+  concealed = false,
 }: {
   game: View;
   send: Send;
   disabled: boolean;
+  resolutionStartedAt?: number | null;
+  concealed?: boolean;
 }) {
   const existingClaim = game.claims[game.me.id];
   const truthfulChoice = game.me.role === 'Wizard' ? game.me.choice : undefined;
@@ -155,18 +160,13 @@ export function Round({
     content = <SelectionTable game={game} send={send} disabled={disabled} />;
   else if (game.phase === 'results')
     content = (
-      <div className="panel">
-        <span className="eyebrow">
-          A SECRET FROM {game.me.result?.room.toUpperCase() || 'THE CASTLE'}
-        </span>
-        <ScrollText className="hero-icon" />
-        <h2>{game.me.result?.action || 'You stayed outside'}</h2>
-        <p className="result-copy">{resultText(game.me.result)}</p>
-        <p className="muted">
-          Remember what you learned. What you tell the others is up to you.
-        </p>
-        {next('Join the discussion')}
-      </div>
+      <ResolutionTable
+        game={game}
+        send={send}
+        disabled={disabled}
+        startedAt={resolutionStartedAt}
+        concealed={concealed}
+      />
     );
   else if (game.phase === 'discussion')
     content = (

@@ -2,7 +2,11 @@
 /* oxlint-disable react/react-compiler -- This effect synchronizes external browser identity and network state after SSR. */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { View } from '@/lib/engine';
+import { RESOLUTION_DURATION } from '@/lib/resolution';
 export function useGame() {
+  const [resolutionStartedAt, setResolutionStartedAt] = useState<number | null>(
+    null,
+  );
   const [game, setGame] = useState<View | null>(null),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
@@ -20,6 +24,15 @@ export function useGame() {
     if (n < accepted.current) return;
     if (latest.current?.code === v.code && v.revision < latest.current.revision)
       return;
+    const previous = latest.current;
+    if (v.phase !== 'results') setResolutionStartedAt(null);
+    else if (
+      previous?.phase === 'selection' &&
+      previous.code === v.code &&
+      previous.round === v.round &&
+      v.deadline - v.serverTime > RESOLUTION_DURATION
+    )
+      setResolutionStartedAt(Date.now());
     accepted.current = n;
     offset.current = v.serverTime - Date.now();
     latest.current = v;
@@ -141,5 +154,16 @@ export function useGame() {
     setOffline(false);
     accepted.current = ++sequence.current;
   };
-  return { game, restoring, error, setError, busy, offline, now, send, leave };
+  return {
+    game,
+    restoring,
+    error,
+    setError,
+    busy,
+    offline,
+    now,
+    send,
+    leave,
+    resolutionStartedAt,
+  };
 }

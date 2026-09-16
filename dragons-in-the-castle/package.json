@@ -11,7 +11,7 @@
     "start": "node scripts/local-cli.mjs preview",
     "lint": "oxlint",
     "format": "oxfmt",
-    "test": "node --experimental-strip-types --test tests/engine.test.ts tests/pwa.test.mjs",
+    "test": "node --experimental-strip-types --test tests/engine.test.ts tests/pwa.test.mjs tests/resolution.test.ts",
     "typecheck": "tsc --noEmit",
     "db:migrate": "node scripts/local-cli.mjs migrate",
     "test:api": "node --test tests/api.test.mjs",

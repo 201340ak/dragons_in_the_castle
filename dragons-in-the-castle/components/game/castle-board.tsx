@@ -1,5 +1,5 @@
 'use client';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { LockKeyhole } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { AvatarBadge } from './shared';
@@ -13,12 +13,16 @@ export function CastleBoard({
   onSelect,
   player,
   disabled = false,
+  roomEffect,
+  resultMode = false,
 }: {
   rooms: string[];
   selected: string;
   onSelect: (room: string) => void;
   player: { name: string; avatar?: string };
   disabled?: boolean;
+  roomEffect?: ReactNode;
+  resultMode?: boolean;
 }) {
   const position = rooms.indexOf(selected);
   return (
@@ -26,7 +30,8 @@ export function CastleBoard({
       <div className="castle-board-caption">
         <span>THE CASTLE</span>
         <span>
-          <LockKeyhole size={12} /> Private destinations
+          <LockKeyhole size={12} />{' '}
+          {resultMode ? 'Your private result' : 'Private destinations'}
         </span>
       </div>
       <div className="castle-cutaway">
@@ -35,7 +40,11 @@ export function CastleBoard({
           onValueChange={(value) => onSelect(String(value))}
           disabled={disabled}
           className="castle-rooms"
-          aria-label="Choose a room on the castle map"
+          aria-label={
+            resultMode
+              ? 'Resolved castle map'
+              : 'Choose a room on the castle map'
+          }
         >
           {rooms.map((room, index) => (
             <label
@@ -50,6 +59,7 @@ export function CastleBoard({
               }
             >
               <span className="castle-interior" aria-hidden="true" />
+              {selected === room && roomEffect}
               <span className="castle-room-label">
                 <span>{room}</span>
                 <RadioGroupItem id={`castle-room-${index}`} value={room} />
@@ -73,7 +83,7 @@ export function CastleBoard({
       </div>
       <p className="castle-location" aria-live="polite">
         {selected
-          ? `Your doorway: ${selected}`
+          ? `${resultMode ? 'Your room' : 'Your doorway'}: ${selected}`
           : 'Tap a room to choose your destination.'}
       </p>
     </div>
@@ -95,10 +105,12 @@ export function RoundTrack({
   round,
   role,
   sealed,
+  resolving = false,
 }: {
   round: number;
   role?: string;
   sealed: boolean;
+  resolving?: boolean;
 }) {
   return (
     <div className="castle-round-track">
@@ -112,7 +124,10 @@ export function RoundTrack({
       </div>
       <ol aria-label="Round stages">
         {['Choose', 'Resolve', 'Discuss', 'Vote'].map((stage, index) => (
-          <li key={stage} aria-current={index === 0 ? 'step' : undefined}>
+          <li
+            key={stage}
+            aria-current={index === (resolving ? 1 : 0) ? 'step' : undefined}
+          >
             {index === 0 && sealed ? 'Sealed' : stage}
           </li>
         ))}

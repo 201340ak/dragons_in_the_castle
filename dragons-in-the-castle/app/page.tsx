@@ -100,6 +100,8 @@ export default function Home() {
               game={state.game}
               send={state.send}
               disabled={state.busy || state.offline}
+              resolutionStartedAt={state.resolutionStartedAt}
+              concealed={hidden}
             />
           </Session>
         ) : (

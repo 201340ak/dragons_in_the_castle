@@ -107,3 +107,8 @@ Checks: TypeScript, lint, 29 engine/PWA tests, web and mobile builds pass. At 39
 Remaining: production API regression checks, push/deploy and hosted verification. Resolution choreography and moving coin tokens remain Milestone 4; broader polish remains Milestone 5.
 
 Castle table Milestones 1–3 publication verified: all three implementation commits were pushed to GitHub and Sites version 7 deployed successfully to the existing public URL. Five production-runtime API tests passed before publication; all five hosted API tests passed on September 15, completing the interrupted release verification. No database reset or schema change was required. Requested scope is complete. Milestone 4 (resolution choreography and moving coin tokens) and Milestone 5 (broader interaction polish) remain future work.
+
+## Castle table — Milestone 4
+Complete: private result board with a 2.4-second begin/impact/settled sequence, successful-theft coin denominations moving toward the local portrait, blocked/quiet guard feedback, counted totals and anonymous investigation findings. Skip and immediate discussion controls never change the server deadline. Initial restored results are settled; animation starts only from a live selection-to-results transition. Typed presentation cues provide an optional future audio subscriber; this release creates no audio.
+Checks: TypeScript/lint and 33 engine/PWA/resolution tests pass, including exact animated theft denominations and irreversible skip/reduced-motion settlement.
+Remaining: Milestone 5 layout/accessibility/reconnect polish and final build/API validation. No push or deployment requested for these milestones.

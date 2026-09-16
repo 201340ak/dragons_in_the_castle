@@ -789,3 +789,155 @@
     transition: none;
   }
 }
+/* Private resolution overlays stay inside the player's own selected room. */
+.controller-app .resolution-table .castle-board {
+  --castle-room-height: 124px;
+}
+.controller-app .resolution-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  font-size: 14px;
+}
+.controller-app .resolution-status button {
+  min-height: 44px;
+}
+.controller-app .room-resolution-effect {
+  position: absolute;
+  inset: 6px 6px 38px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: #142033eb;
+  border: 1px solid #e3b768;
+  border-radius: 8px;
+  color: #ffe1a1;
+  z-index: 1;
+  text-align: center;
+  pointer-events: none;
+}
+.controller-app .room-resolution-effect > span {
+  font-size: 12px;
+  line-height: 1.2;
+  padding: 0 3px;
+}
+.controller-app .resolution-table .castle-pawn {
+  z-index: 2;
+}
+.controller-app .stolen-tokens {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  position: relative;
+  height: 27px;
+}
+.controller-app .coin-token {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+  transform: translateX(calc((var(--token-index) - 3) * 9px));
+}
+.controller-app .stage-impact .coin-token {
+  animation: coin-to-player 1.1s ease-in calc(var(--token-index) * 65ms) both;
+}
+.controller-app .stage-impact.resolution-blocked .room-resolution-effect {
+  animation: ward-block 0.7s ease-out;
+  border-color: #8dd7ec;
+  color: #b9efff;
+}
+.controller-app .stage-impact.resolution-guard .room-resolution-effect {
+  animation: ward-glow 1.2s ease-out;
+  color: #b9efff;
+}
+.controller-app
+  .stage-impact.resolution-investigate
+  .room-resolution-effect
+  > svg {
+  animation: trace-search 1.3s ease-in-out;
+}
+.controller-app .stage-impact.resolution-count .room-resolution-effect {
+  animation: count-reveal 0.65s ease-out;
+}
+.controller-app .resolution-account {
+  margin-top: 12px;
+}
+.controller-app .resolution-account h2:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+}
+.controller-app .resolution-clues {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+.controller-app .resolution-clues div {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+}
+.controller-app .resolution-clues dt {
+  font-size: 12px;
+  text-transform: capitalize;
+  overflow-wrap: anywhere;
+}
+.controller-app .resolution-clues dd {
+  font-size: 20px;
+  margin: 4px 0 0;
+}
+@keyframes coin-to-player {
+  from {
+    opacity: 1;
+    transform: translate(calc((var(--token-index) - 3) * 9px), 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(0, 48px) scale(0.45);
+  }
+}
+@keyframes ward-block {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.06);
+    box-shadow: 0 0 18px #85daf6;
+  }
+}
+@keyframes ward-glow {
+  50% {
+    box-shadow: 0 0 18px #85daf6;
+  }
+}
+@keyframes trace-search {
+  30% {
+    transform: translateX(-12px);
+  }
+  70% {
+    transform: translateX(12px);
+  }
+}
+@keyframes count-reveal {
+  from {
+    opacity: 0.3;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .controller-app .resolution-table * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
