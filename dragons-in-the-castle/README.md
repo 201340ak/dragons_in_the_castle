@@ -73,3 +73,7 @@ The entry screen offers configured name suggestions and avatar choices. Bot game
 Production preview: after building, run `npm start -- --port 3001`. The preview applies migrations automatically into .wrangler/preview-state so the development and production processes do not contend for the same SQLite files.
 
 Lint checks application code. The unmodified starter component catalog and its helper are excluded; framework-only image/link rules are disabled because this UI is also built as a static Capacitor client.
+
+## Resolution feedback and future sound
+
+`components/game/resolution-table.tsx` exposes an optional `onCue` callback with typed `begin`, `impact`, and `settled` presentation events plus the private effect kind. Events are deduplicated within a mounted round; restored results and reduced-motion playback bypass animation cues. Nothing currently creates an audio context or plays sound. A future opt-in audio adapter can subscribe here without changing server commands, deadlines, or private-result projection. Keep playback preference and sound loading in that adapter, never in the game engine.

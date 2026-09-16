@@ -1,7 +1,26 @@
-import type { Result } from './engine';
+import type { Result, View } from './engine';
 
 export const RESOLUTION_DURATION = 2400;
 export const RESOLUTION_IMPACT = 650;
+
+type ResolutionSnapshot = Pick<
+  View,
+  'code' | 'round' | 'phase' | 'deadline' | 'serverTime'
+>;
+export function canAnimateResolution(
+  previous: ResolutionSnapshot | null,
+  next: ResolutionSnapshot,
+  reconnecting: boolean,
+) {
+  return (
+    !reconnecting &&
+    previous?.phase === 'selection' &&
+    next.phase === 'results' &&
+    previous.code === next.code &&
+    previous.round === next.round &&
+    next.deadline - next.serverTime > RESOLUTION_DURATION
+  );
+}
 export type ResolutionCue = 'begin' | 'impact' | 'settled';
 export type ResolutionEffect =
   | 'theft'

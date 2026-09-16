@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   coinTokens,
+  canAnimateResolution,
   createResolutionTimeline,
   resolutionEffect,
   resolutionStage,
@@ -96,4 +97,43 @@ void test('skip, privacy cover and reduced motion cannot be undone by later time
   assert.equal(timeline.advance(3400), 'settled');
   const reload = createResolutionTimeline(null);
   assert.equal(reload.advance(1200), 'settled');
+});
+
+void test('only a fresh same-game resolution animates; recovery, polling, deadlines and wins bypass it', () => {
+  const previous = {
+    code: 'ABC234',
+    round: 1,
+    phase: 'selection' as const,
+    deadline: 10000,
+    serverTime: 9000,
+  };
+  const next = {
+    ...previous,
+    phase: 'results' as const,
+    deadline: 20000,
+    serverTime: 10000,
+  };
+  assert.equal(canAnimateResolution(previous, next, false), true);
+  assert.equal(canAnimateResolution(null, next, false), false);
+  assert.equal(canAnimateResolution(previous, next, true), false);
+  assert.equal(
+    canAnimateResolution(next, { ...next, serverTime: 11000 }, false),
+    false,
+  );
+  assert.equal(
+    canAnimateResolution(previous, { ...next, code: 'OTHER2' }, false),
+    false,
+  );
+  assert.equal(
+    canAnimateResolution(previous, { ...next, round: 2 }, false),
+    false,
+  );
+  assert.equal(
+    canAnimateResolution(previous, { ...next, deadline: 12000 }, false),
+    false,
+  );
+  assert.equal(
+    canAnimateResolution(previous, { ...next, phase: 'over' }, false),
+    false,
+  );
 });

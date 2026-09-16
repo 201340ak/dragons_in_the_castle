@@ -25,8 +25,31 @@ export function CastleBoard({
   resultMode?: boolean;
 }) {
   const position = rooms.indexOf(selected);
+  const RoomContainer = resultMode ? 'div' : 'label';
+  const tiles = rooms.map((room, index) => (
+    <RoomContainer
+      key={room}
+      htmlFor={resultMode ? undefined : 'castle-room-' + index}
+      className={'castle-room ' + (selected === room ? 'chosen' : '')}
+      style={
+        {
+          '--room-x': (roomArt(room, index) % 2) * 100 + '%',
+          '--room-y': Math.floor(roomArt(room, index) / 2) * 50 + '%',
+        } as CSSProperties
+      }
+    >
+      <span className="castle-interior" aria-hidden="true" />
+      {selected === room && roomEffect}
+      <span className="castle-room-label">
+        <span>{room}</span>
+        {!resultMode && (
+          <RadioGroupItem id={'castle-room-' + index} value={room} />
+        )}
+      </span>
+    </RoomContainer>
+  ));
   return (
-    <div className="castle-board">
+    <div className={'castle-board ' + (resultMode ? 'result-map' : '')}>
       <div className="castle-board-caption">
         <span>THE CASTLE</span>
         <span>
@@ -35,46 +58,31 @@ export function CastleBoard({
         </span>
       </div>
       <div className="castle-cutaway">
-        <RadioGroup
-          value={selected}
-          onValueChange={(value) => onSelect(String(value))}
-          disabled={disabled}
-          className="castle-rooms"
-          aria-label={
-            resultMode
-              ? 'Resolved castle map'
-              : 'Choose a room on the castle map'
-          }
-        >
-          {rooms.map((room, index) => (
-            <label
-              key={room}
-              htmlFor={`castle-room-${index}`}
-              className={`castle-room ${selected === room ? 'chosen' : ''}`}
-              style={
-                {
-                  '--room-x': `${(roomArt(room, index) % 2) * 100}%`,
-                  '--room-y': `${Math.floor(roomArt(room, index) / 2) * 50}%`,
-                } as CSSProperties
-              }
-            >
-              <span className="castle-interior" aria-hidden="true" />
-              {selected === room && roomEffect}
-              <span className="castle-room-label">
-                <span>{room}</span>
-                <RadioGroupItem id={`castle-room-${index}`} value={room} />
-              </span>
-            </label>
-          ))}
-        </RadioGroup>
+        {resultMode ? (
+          <div className="castle-rooms" aria-label="Resolved castle map">
+            {tiles}
+          </div>
+        ) : (
+          <RadioGroup
+            value={selected}
+            onValueChange={(value) => onSelect(String(value))}
+            disabled={disabled}
+            className="castle-rooms"
+            aria-label="Choose a room on the castle map"
+          >
+            {tiles}
+          </RadioGroup>
+        )}
         {position >= 0 && (
           <div
             className="castle-pawn"
             aria-hidden="true"
-            style={{
-              left: `calc(${position % 2 ? '75%' : '25%'} - 18px)`,
-              top: `calc(${Math.floor(position / 2)} * (var(--castle-room-height) + 6px) + var(--castle-room-height) - 66px)`,
-            }}
+            style={
+              {
+                left: `calc(${position % 2 ? '75%' : '25%'} - 18px)`,
+                top: `calc(${Math.floor(position / 2)} * (var(--castle-room-height) + 6px) + var(--castle-room-height) - 66px)`,
+              } as CSSProperties
+            }
           >
             <AvatarBadge player={player} />
             <span>You</span>
@@ -84,7 +92,7 @@ export function CastleBoard({
       <p className="castle-location" aria-live="polite">
         {selected
           ? `${resultMode ? 'Your room' : 'Your doorway'}: ${selected}`
-          : 'Tap a room to choose your destination.'}
+          : resultMode ? 'You stayed outside this round.' : 'Tap a room to choose your destination.'}
       </p>
     </div>
   );

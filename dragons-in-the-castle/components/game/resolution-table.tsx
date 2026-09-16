@@ -42,7 +42,13 @@ export function ResolutionTable({
   const effect = resolutionEffect(result);
   const [timeline] = useState(() => createResolutionTimeline(startedAt));
   const [stage, setStage] = useState<ResolutionCue>(() =>
-    resolutionStage(startedAt, Date.now()),
+    resolutionStage(
+      startedAt,
+      Date.now(),
+      concealed ||
+        (typeof window !== 'undefined' &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+    ),
   );
   const delivered = useRef(new Set<ResolutionCue>());
   const callback = useRef(onCue);
@@ -74,7 +80,13 @@ export function ResolutionTable({
     };
   }, [startedAt, concealed, timeline]);
   useEffect(() => {
-    if (startedAt === null || concealed || delivered.current.has(stage)) return;
+    if (
+      startedAt === null ||
+      concealed ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      delivered.current.has(stage)
+    )
+      return;
     delivered.current.add(stage);
     callback.current?.({ cue: stage, effect });
   }, [stage, effect, startedAt, concealed]);
@@ -116,13 +128,13 @@ export function ResolutionTable({
         resolving
       />
       <div className="resolution-status">
-        <span>
+        <output>
           {settled
             ? 'Your result'
             : stage === 'begin'
               ? 'Your card turns…'
               : 'The castle resolves…'}
-        </span>
+        </output>
         {!settled && (
           <Button className="quiet" onClick={skip}>
             Skip animation

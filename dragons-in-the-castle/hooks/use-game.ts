@@ -2,7 +2,7 @@
 /* oxlint-disable react/react-compiler -- This effect synchronizes external browser identity and network state after SSR. */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { View } from '@/lib/engine';
-import { RESOLUTION_DURATION } from '@/lib/resolution';
+import { canAnimateResolution } from '@/lib/resolution';
 export function useGame() {
   const [resolutionStartedAt, setResolutionStartedAt] = useState<number | null>(
     null,
@@ -14,6 +14,7 @@ export function useGame() {
     [offline, setOffline] = useState(false),
     [now, setNow] = useState(0);
   const token = useRef(''),
+    disconnected = useRef(false),
     latest = useRef<View | null>(null),
     saved = useRef(''),
     mutating = useRef(false),
@@ -26,13 +27,9 @@ export function useGame() {
       return;
     const previous = latest.current;
     if (v.phase !== 'results') setResolutionStartedAt(null);
-    else if (
-      previous?.phase === 'selection' &&
-      previous.code === v.code &&
-      previous.round === v.round &&
-      v.deadline - v.serverTime > RESOLUTION_DURATION
-    )
+    else if (canAnimateResolution(previous, v, disconnected.current))
       setResolutionStartedAt(Date.now());
+    disconnected.current = false;
     accepted.current = n;
     offset.current = v.serverTime - Date.now();
     latest.current = v;
@@ -123,7 +120,10 @@ export function useGame() {
         const v = await request({ type: 'sync', code: saved.current });
         if (alive && saved.current) accept(v, n);
       } catch {
-        if (alive) setOffline(true);
+        if (alive) {
+          disconnected.current = true;
+          setOffline(true);
+        }
       } finally {
         polling = false;
       }

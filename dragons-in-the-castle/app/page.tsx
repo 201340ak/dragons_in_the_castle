@@ -96,7 +96,7 @@ export default function Home() {
             coverScreen={() => setHidden(true)}
           >
             <Round
-              key={`${state.game.round}-${state.game.phase}`}
+              key={`${state.game.code}-${state.game.round}-${state.game.phase}`}
               game={state.game}
               send={state.send}
               disabled={state.busy || state.offline}

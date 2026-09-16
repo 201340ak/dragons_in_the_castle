@@ -941,3 +941,110 @@
     transition: none !important;
   }
 }
+
+/* Touch, text enlargement and both themes share the same usable board geometry. */
+.controller-app .selection-table .castle-board,
+.controller-app .resolution-table .castle-board {
+  --castle-room-height: 8.75rem;
+}
+.controller-app .castle-room-label {
+  font-size: 0.875rem;
+  min-height: 2.75rem;
+  padding: 0.5rem;
+}
+.controller-app .castle-board-caption {
+  font-size: 0.75rem;
+  flex-wrap: wrap;
+}
+.controller-app .castle-location,
+.controller-app .castle-round-track li {
+  font-size: 0.8125rem;
+}
+.controller-app .castle-round-track > div {
+  font-size: 0.875rem;
+  flex-wrap: wrap;
+}
+.controller-app .castle-pawn > span:last-child {
+  font-size: 0.75rem;
+}
+.controller-app .castle-pawn {
+  margin-top: -0.5rem;
+}
+.controller-app .table-action-title {
+  font-size: 0.875rem;
+  align-items: flex-start;
+}
+.controller-app .table-action-card small {
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+.controller-app .table-action-art {
+  height: 6rem;
+}
+.controller-app .hand-heading > span {
+  font-size: 0.875rem;
+}
+.controller-app .seal-controls p,
+.controller-app .table-waiting p,
+.controller-app .table-instruction {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+.controller-app .sealed-choice {
+  padding: 1rem;
+  width: min(100%, 15rem);
+}
+.controller-app .sealed-choice small {
+  font-size: 0.8125rem;
+}
+.controller-app .seal-controls button,
+.controller-app .resolution-account button {
+  min-height: 48px;
+  white-space: normal;
+}
+.controller-app .table-action-card,
+.controller-app .castle-room {
+  touch-action: manipulation;
+}
+.controller-app .result-map .castle-room {
+  cursor: default;
+}
+.controller-app .room-resolution-effect {
+  bottom: 3rem;
+}
+.controller-app .resolution-status {
+  color: var(--foreground);
+}
+.controller-app .room-resolution-effect > span {
+  font-size: 0.8125rem;
+}
+.controller-app .resolution-account .result-copy {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.controller-app .resolution-clues dt {
+  font-size: 0.875rem;
+}
+[data-theme='light'] .controller-app .castle-round-track > div span,
+[data-theme='light'] .controller-app .castle-round-track li,
+[data-theme='light'] .controller-app .castle-board-caption,
+[data-theme='light'] .controller-app .castle-board-caption span:last-child,
+[data-theme='light'] .controller-app .castle-location,
+[data-theme='light'] .controller-app .hand-heading > span {
+  color: #475365;
+}
+[data-theme='light'] .controller-app .castle-round-track li[aria-current] {
+  color: #724714;
+  border-color: #93642b;
+}
+@media (max-width: 359px) {
+  .controller-app .action-hand {
+    grid-template-columns: 1fr;
+  }
+  .controller-app .resolution-clues {
+    grid-template-columns: 1fr;
+  }
+  .controller-app .castle-round-track > div span {
+    text-align: left;
+  }
+}
