@@ -9,6 +9,7 @@ import { useGame } from '@/hooks/use-game';
 import { Entry } from '@/components/game/entry';
 import { Session } from '@/components/game/session';
 import { Round } from '@/components/game/round';
+import { AccountMenu } from '@/components/account-menu';
 export default function Home() {
   const state = useGame();
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -44,6 +45,7 @@ export default function Home() {
         </a>
         {state.game ? (
           <div className="header-actions">
+            <AccountMenu concealed={hidden} />
             <span className="connection">
               <i className={state.offline ? 'disconnected' : ''} />
               {state.offline ? 'Reconnecting' : 'Connected'}
@@ -62,6 +64,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="header-actions entry-header-actions">
+            <AccountMenu concealed={hidden} />
             <span className="eyebrow">A GAME OF SECRETS & SUSPICION</span>
             <Button
               className="quiet theme-toggle"

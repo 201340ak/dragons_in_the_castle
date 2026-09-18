@@ -1,0 +1,94 @@
+.account-panel {
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 1rem;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  padding: 28px;
+  border: 1px solid #52647c;
+}
+.account-panel h2 {
+  font-size: 1.5rem;
+  padding-right: 20px;
+}
+.account-panel p {
+  line-height: 1.5;
+}
+.account-panel form {
+  display: grid;
+  gap: 12px;
+}
+.account-panel input:not([type='radio']) {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #728299;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 1rem;
+}
+.account-panel button {
+  min-height: 44px;
+  white-space: normal;
+}
+.account-panel fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0 0 8px;
+}
+.account-panel legend {
+  margin-bottom: 8px;
+}
+.account-portraits {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.account-portraits label {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.account-portraits input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.account-portraits span {
+  display: grid;
+  place-items: center;
+  min-height: 48px;
+  width: 100%;
+  border: 2px solid #728299;
+  border-radius: 12px;
+  font-size: 1.6rem;
+}
+.account-portraits input:checked + span {
+  border-color: #cb993e;
+  background: #b2863630;
+}
+.account-portraits input:focus-visible + span {
+  outline: 3px solid #6eaeef;
+  outline-offset: 2px;
+}
+.account-email {
+  overflow-wrap: anywhere;
+}
+.account-test-note {
+  font-size: 0.875rem;
+}
+.account-error {
+  color: #b93838;
+}
+[data-theme='dark'] .account-error {
+  color: #ffa6a6;
+}
+.controller-app .header-actions .account-toggle {
+  min-height: 44px;
+}
+@media (max-width: 420px) {
+  .controller-app .account-toggle span {
+    display: none;
+  }
+}

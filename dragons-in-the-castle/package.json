@@ -11,7 +11,7 @@
     "start": "node scripts/local-cli.mjs preview",
     "lint": "oxlint",
     "format": "oxfmt",
-    "test": "node --experimental-strip-types --test tests/engine.test.ts tests/pwa.test.mjs tests/resolution.test.ts",
+    "test": "node --experimental-strip-types --test tests/engine.test.ts tests/pwa.test.mjs tests/resolution.test.ts tests/account.test.ts",
     "typecheck": "tsc --noEmit",
     "db:migrate": "node scripts/local-cli.mjs migrate",
     "test:api": "node --test tests/api.test.mjs",
@@ -20,6 +20,7 @@
   "dependencies": {
     "@base-ui/react": "1.7.0",
     "@shadcn/react": "0.3.0",
+    "@supabase/supabase-js": "^2.116.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
