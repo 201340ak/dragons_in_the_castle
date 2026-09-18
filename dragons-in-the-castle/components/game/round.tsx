@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Shield, Flame, ScrollText, Vote, Eye, Trophy } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { ACTIONS, type View } from '@/lib/engine';
+import { ACTIONS, REACTIONS, type View } from '@/lib/engine';
 import { AvatarBadge, GameButton, Gold, resultText, type Send } from './shared';
 export function Round({
   game,
@@ -125,10 +125,11 @@ export function Round({
         <Eye className="hero-icon" />
         <h2>You watch from beyond the gates</h2>
         <p>
-          You have been banished. Follow the discussion and verdicts while the
+          You have been banished. Follow the Round table and verdicts while the
           remaining players decide the castle’s fate.
         </p>
         {game.phase === 'verdict' && <Verdict game={game} />}
+        {game.phase === 'discussion' && <Claims game={game} />}
       </div>
     );
   else if (game.phase === 'reveal')
@@ -171,9 +172,9 @@ export function Round({
   else if (game.phase === 'discussion')
     content = (
       <Tabs defaultValue="claim" className="discussion-tabs">
-        <TabsList aria-label="Discussion pages">
+        <TabsList aria-label="Round table pages">
           <TabsTrigger value="table">
-            Discussion ({Object.keys(game.claims).length})
+            Round table ({Object.keys(game.claims).length})
           </TabsTrigger>
           <TabsTrigger value="claim">My claim</TabsTrigger>
         </TabsList>
@@ -194,7 +195,7 @@ export function Round({
           )}
         </div>
         <TabsContent value="table">
-          <Claims game={game} />
+          <Claims game={game} send={send} disabled={disabled} />
         </TabsContent>
         <TabsContent value="claim">
           <div className="panel">
@@ -301,13 +302,25 @@ export function Round({
     </>
   );
 }
-function Claims({ game }: { game: View }) {
+function Claims({
+  game,
+  send,
+  disabled = false,
+}: {
+  game: View;
+  send?: Send;
+  disabled?: boolean;
+}) {
   return (
     <div className="claims-feed">
       <div className="section-heading">
         <h2>Whispers around the table</h2>
         <ScrollText />
       </div>
+      <p className="tiny">
+        React to a claim. Counts are anonymous; tap your reaction again to
+        remove it. Editing a claim clears its reactions.
+      </p>
       {Object.keys(game.claims).length === 0 ? (
         <p className="empty">No claims yet. The room is listening.</p>
       ) : (
@@ -322,6 +335,50 @@ function Claims({ game }: { game: View }) {
             </p>
             <p>{c.result}</p>
             {c.statement && <p>“{c.statement}”</p>}
+            <div
+              className="claim-reactions"
+              aria-label={`Reactions to ${game.players.find((p) => p.id === id)?.name}’s claim`}
+            >
+              {REACTIONS.map((reaction) => {
+                const summary = game.claimReactions?.[id];
+                const count = summary?.counts[reaction.id] ?? 0;
+                const selected = summary?.mine === reaction.id;
+                const interactive =
+                  !!send &&
+                  game.me.active &&
+                  id !== game.me.id &&
+                  game.phase === 'discussion';
+                return interactive ? (
+                  <Button
+                    key={reaction.id}
+                    className="quiet reaction-button"
+                    disabled={disabled}
+                    aria-pressed={selected}
+                    aria-label={`${reaction.label}: ${count}${selected ? ', your reaction' : ''}`}
+                    onClick={() =>
+                      void send('claim-reaction', {
+                        target: id,
+                        reaction: selected ? null : reaction.id,
+                        claimVersion: summary?.version ?? 0,
+                      })
+                    }
+                  >
+                    <span aria-hidden="true">{reaction.emoji}</span>
+                    <span>{count}</span>
+                  </Button>
+                ) : (
+                  <span
+                    key={reaction.id}
+                    className="reaction-count"
+                    aria-label={`${reaction.label}: ${count}`}
+                  >
+                    <span aria-hidden="true">
+                      {reaction.emoji} {count}
+                    </span>
+                  </span>
+                );
+              })}
+            </div>
           </article>
         ))
       )}

@@ -57,7 +57,7 @@ export function SettingsForm({
           ['stealMin', 'Minimum coins per theft'],
           ['stealMax', 'Maximum coins per theft'],
           ['selection', 'Selection · seconds'],
-          ['discussion', 'Discussion · seconds'],
+          ['discussion', 'Round table · seconds'],
           ['vote', 'Vote · seconds'],
         ] as const
       ).map(([key, label]) => (

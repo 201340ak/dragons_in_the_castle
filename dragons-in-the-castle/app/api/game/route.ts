@@ -138,6 +138,7 @@ async function handle(req: Request) {
               'claim',
               'ack',
               'discussion-ready',
+              'claim-reaction',
               'vote-intent',
             ].includes(b.type)
           )

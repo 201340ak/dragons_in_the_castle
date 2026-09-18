@@ -193,7 +193,7 @@ export function ResolutionTable({
             void send('ack');
           }}
         >
-          {game.ack ? 'Waiting for the fellowship…' : 'Join the discussion'}
+          {game.ack ? 'Waiting for the fellowship…' : 'Join the Round table'}
         </GameButton>
       </div>
     </section>

@@ -60,6 +60,120 @@ function game(count = 4): Game {
   tick(g, 1);
   return g;
 }
+
+void test('claim reactions are anonymous, changeable, removable and survive reconnect', () => {
+  const g = game();
+  g.phase = 'discussion';
+  g.deadline = 10000;
+  command(
+    g,
+    'p0',
+    {
+      type: 'claim',
+      room: 'Tower',
+      action: 'Count Coins',
+      result: 'Ten coins.',
+      statement: '',
+    },
+    2,
+  );
+  command(
+    g,
+    'p1',
+    {
+      type: 'claim-reaction',
+      target: 'p0',
+      reaction: 'skeptical',
+      claimVersion: 1,
+    },
+    3,
+  );
+  command(
+    g,
+    'p2',
+    {
+      type: 'claim-reaction',
+      target: 'p0',
+      reaction: 'skeptical',
+      claimVersion: 1,
+    },
+    3,
+  );
+  const snapshot = view(g, 'p3', 4);
+  assert.equal(snapshot.claimReactions.p0.counts.skeptical, 2);
+  assert.equal(snapshot.claimReactions.p0.mine, null);
+  assert.deepEqual(Object.keys(snapshot.claimReactions.p0).sort(), [
+    'counts',
+    'mine',
+    'version',
+  ]);
+  assert.equal(
+    view(JSON.parse(JSON.stringify(g)), 'p1', 4).claimReactions.p0.mine,
+    'skeptical',
+  );
+  command(
+    g,
+    'p1',
+    {
+      type: 'claim-reaction',
+      target: 'p0',
+      reaction: 'believable',
+      claimVersion: 1,
+    },
+    5,
+  );
+  assert.equal(view(g, 'p0', 6).claimReactions.p0.counts.skeptical, 1);
+  assert.equal(view(g, 'p0', 6).claimReactions.p0.counts.believable, 1);
+  command(
+    g,
+    'p1',
+    { type: 'claim-reaction', target: 'p0', reaction: null, claimVersion: 1 },
+    7,
+  );
+  assert.equal(view(g, 'p0', 8).claimReactions.p0.counts.believable, 0);
+  assert.deepEqual(g.ack, []);
+  assert.deepEqual(g.history[0].votes, {});
+  g.phase = 'over';
+  assert.equal('reactions' in view(g, 'p0', 8).history![0], false);
+});
+
+void test('reaction permissions and claim version prevent stale endorsements', () => {
+  const g = game();
+  g.phase = 'discussion';
+  g.deadline = 10000;
+  const claim = {
+    type: 'claim',
+    room: 'Tower',
+    action: 'Count Coins' as const,
+    result: 'Ten coins.',
+    statement: '',
+  };
+  command(g, 'p0', claim, 2);
+  const react = {
+    type: 'claim-reaction',
+    target: 'p0',
+    reaction: 'funny' as const,
+    claimVersion: 1,
+  };
+  assert.throws(() => command(g, 'p0', react, 3));
+  assert.throws(() => command(g, 'p1', { ...react, target: 'p2' }, 3));
+  assert.throws(() =>
+    command(g, 'p1', { ...react, reaction: 'invalid' as never }, 3),
+  );
+  g.players[3].active = false;
+  assert.throws(() => command(g, 'p3', react, 3));
+  command(g, 'p1', react, 3);
+  command(g, 'p0', { ...claim, result: 'Five coins.' }, 4);
+  assert.equal(view(g, 'p1', 5).claimReactions.p0.mine, null);
+  assert.equal(view(g, 'p1', 5).claimReactions.p0.counts.funny, 0);
+  assert.throws(() => command(g, 'p1', react, 5));
+  command(g, 'p1', { ...react, claimVersion: 2 }, 6);
+  g.phase = 'vote';
+  assert.throws(() => command(g, 'p1', { ...react, claimVersion: 2 }, 7));
+  assert.equal(view(g, 'p2', 7).claimReactions.p0.counts.funny, 1);
+  g.phase = 'selection';
+  assert.deepEqual(view(g, 'p2', 7).claimReactions, {});
+});
 void test('successful theft and count after simultaneous resolution', () => {
   const g = game();
   g.history[0].choices = {

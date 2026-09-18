@@ -6,6 +6,13 @@ export const ACTIONS = [
   'Steal Coins',
 ] as const;
 export type Action = (typeof ACTIONS)[number];
+export const REACTIONS = [
+  { id: 'skeptical', emoji: '🤔', label: 'Skeptical' },
+  { id: 'interesting', emoji: '👀', label: 'Interesting' },
+  { id: 'believable', emoji: '👍', label: 'Believable' },
+  { id: 'funny', emoji: '😂', label: 'Funny' },
+] as const;
+export type Reaction = (typeof REACTIONS)[number]['id'];
 export type Phase =
   | 'lobby'
   | 'reveal'
@@ -87,6 +94,8 @@ export type Round = {
   choices: Record<string, Choice>;
   results: Record<string, Result>;
   claims: Record<string, Claim>;
+  claimVersions?: Record<string, number>;
+  reactions?: Record<string, Record<string, Reaction>>;
   votes: Record<string, string>;
   voteIntents?: Record<string, string>;
   totals: Record<string, number>;
@@ -481,6 +490,8 @@ export function command(
     statement?: string;
     target?: string;
     ready?: boolean;
+    reaction?: Reaction | null;
+    claimVersion?: number;
   },
   now: number,
   random: () => number = Math.random,
@@ -568,7 +579,7 @@ export function command(
       playing();
       ensure(
         g.phase === 'discussion' && now < g.deadline,
-        'Discussion has ended.',
+        'The Round table has ended.',
       );
       ensure(
         body.room &&
@@ -590,13 +601,44 @@ export function command(
         result: body.result,
         statement: body.statement,
       };
+      (r.claimVersions ??= {})[id] = (r.claimVersions?.[id] ?? 0) + 1;
+      if (r.reactions) delete r.reactions[id];
       g.ack = g.ack.filter((playerId) => playerId !== id);
       break;
+    case 'claim-reaction': {
+      playing();
+      ensure(
+        g.phase === 'discussion' && now < g.deadline,
+        'The Round table has ended.',
+      );
+      const target = body.target;
+      ensure(
+        target &&
+          target !== id &&
+          g.players.some((player) => player.id === target) &&
+          r.claims[target],
+        'Choose another player’s posted claim.',
+      );
+      ensure(
+        body.claimVersion === (r.claimVersions?.[target] ?? 0),
+        'That claim changed. Read it again before reacting.',
+      );
+      ensure(
+        body.reaction === null ||
+          REACTIONS.some((reaction) => reaction.id === body.reaction),
+        'Choose an available reaction.',
+      );
+      const reactions = (r.reactions ??= {});
+      const claimReactions = (reactions[target] ??= {});
+      if (body.reaction === null) delete claimReactions[id];
+      else claimReactions[id] = body.reaction!;
+      break;
+    }
     case 'discussion-ready':
       playing();
       ensure(
         g.phase === 'discussion' && now < g.deadline,
-        'Discussion has ended.',
+        'The Round table has ended.',
       );
       ensure(r.claims[id], 'Post a claim before getting ready to vote.');
       ensure(typeof body.ready === 'boolean', 'Choose your readiness.');
@@ -718,6 +760,25 @@ export function view(g: Game, id: string, now: number) {
     claims: ['discussion', 'vote', 'verdict', 'over'].includes(g.phase)
       ? r?.claims || {}
       : {},
+    claimReactions: ['discussion', 'vote', 'verdict', 'over'].includes(g.phase)
+      ? Object.fromEntries(
+          Object.keys(r?.claims || {}).map((target) => [
+            target,
+            {
+              version: r?.claimVersions?.[target] ?? 0,
+              mine: r?.reactions?.[target]?.[id] ?? null,
+              counts: Object.fromEntries(
+                REACTIONS.map(({ id: reaction }) => [
+                  reaction,
+                  Object.values(r?.reactions?.[target] || {}).filter(
+                    (value) => value === reaction,
+                  ).length,
+                ]),
+              ),
+            },
+          ]),
+        )
+      : {},
     liveVotes:
       g.phase === 'vote'
         ? Object.fromEntries(
@@ -736,7 +797,14 @@ export function view(g: Game, id: string, now: number) {
     verdict: ['verdict', 'over'].includes(g.phase)
       ? { totals: r?.totals || {}, banished: r?.banished }
       : undefined,
-    ...(g.phase === 'over' ? { history: g.history, coins: g.rooms } : {}),
+    ...(g.phase === 'over'
+      ? {
+          history: g.history.map(
+            ({ reactions: _reactions, ...round }) => round,
+          ),
+          coins: g.rooms,
+        }
+      : {}),
   };
 }
 export function selectionComplete(g: Game, now: number) {

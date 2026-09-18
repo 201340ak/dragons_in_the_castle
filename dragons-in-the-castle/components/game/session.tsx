@@ -16,7 +16,7 @@ const titles: Record<string, string> = {
   reveal: 'Your role',
   selection: 'Choose',
   results: 'Your result',
-  discussion: 'Discuss',
+  discussion: 'Round table',
   vote: 'Vote',
   verdict: 'Verdict',
   over: 'Game over',

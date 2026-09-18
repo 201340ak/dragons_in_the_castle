@@ -131,7 +131,7 @@ export function RoundTrack({
         </span>
       </div>
       <ol aria-label="Round stages">
-        {['Choose', 'Resolve', 'Discuss', 'Vote'].map((stage, index) => (
+        {['Choose', 'Resolve', 'Round table', 'Vote'].map((stage, index) => (
           <li
             key={stage}
             aria-current={index === (resolving ? 1 : 0) ? 'step' : undefined}

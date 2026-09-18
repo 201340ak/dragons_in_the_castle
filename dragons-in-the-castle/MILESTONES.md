@@ -126,3 +126,7 @@ Implemented and published: Supabase email-link sign-in with same-browser PKCE, p
 Checks: 47 automated tests, TypeScript, lint, web/mobile builds and five local multiplayer API checks passed before release. GitHub implementation commit a6fed07 was pushed; Sites version 9 deployed September 18. All five hosted multiplayer checks plus anonymous account status, cross-origin mutation rejection and invalid callback rejection passed. No database migration/reset or audience change was required.
 
 Remaining verification: the owner must request a real email link and open it in the same browser, then save a profile and sign out. No real email delivery or authenticated browser profile flow has yet been verified. Pause here before beginning the next feature milestone.
+
+## Round table — Milestone 1
+Complete: renamed the discussion phase in the interface to Round table, added anonymous skeptical/interesting/believable/funny reaction counts, one changeable/removable reaction per active player per other player's claim, read-only counts after discussion and for spectators. Claim edits clear reactions and invalidate stale reaction requests. Individual reaction identities are excluded even from the endgame history.
+Checks: TypeScript, lint and 49 automated tests pass. Remaining: untimed host settings and advancement, runtime integration tests and final builds. The owner reports email sign-in working and has pivoted back to gameplay.
