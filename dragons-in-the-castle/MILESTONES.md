@@ -119,3 +119,10 @@ Checks: TypeScript/lint, 34 engine/PWA/resolution tests, five production-runtime
 Remaining: visual playthrough feedback and any subsequently requested release. Both milestones are committed locally; no push or deployment was requested or performed. Hosted version 7 is unchanged.
 
 Castle table Milestones 4–5 publication verified: pushed both implementation commits to GitHub and deployed Sites version 8 to the existing public URL on September 16. All five hosted multiplayer API regression tests pass. Existing database and access settings were preserved. Visual playthrough remains unperformed; this release reuses the previously validated web/mobile builds and 34 passing automated tests.
+
+## Accounts — Milestone 1
+Implemented and published: Supabase email-link sign-in with same-browser PKCE, protected account cookies, session refresh, sign-out, account name and built-in portrait. Guest game identity remains independent; hosting does not yet require an account. Email delivery intentionally uses Supabase's default sender for the owner's test account. Email codes, custom SMTP, Google/Facebook and account-based hosting authorization remain later milestones.
+
+Checks: 47 automated tests, TypeScript, lint, web/mobile builds and five local multiplayer API checks passed before release. GitHub implementation commit a6fed07 was pushed; Sites version 9 deployed September 18. All five hosted multiplayer checks plus anonymous account status, cross-origin mutation rejection and invalid callback rejection passed. No database migration/reset or audience change was required.
+
+Remaining verification: the owner must request a real email link and open it in the same browser, then save a profile and sign out. No real email delivery or authenticated browser profile flow has yet been verified. Pause here before beginning the next feature milestone.
