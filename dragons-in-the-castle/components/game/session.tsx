@@ -51,6 +51,8 @@ export function Session({
   );
   const seconds = Math.max(0, Math.ceil((game.deadline - now) / 1000));
   const host = game.host === game.me.id;
+  const untimed =
+    game.phase === 'discussion' && game.settings.roundTableUntimed;
   return (
     <div className="game-shell">
       <div className="controller-status">
@@ -83,10 +85,16 @@ export function Session({
         {!['lobby', 'over'].includes(game.phase) && (
           <span
             className="controller-clock"
-            aria-label={`${seconds} seconds remaining`}
+            aria-label={
+              untimed
+                ? 'Round table has no timer'
+                : `${seconds} seconds remaining`
+            }
           >
             <Clock3 size={16} />
-            {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, '0')}
+            {untimed
+              ? 'No timer'
+              : `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`}
           </span>
         )}
       </div>
@@ -243,6 +251,12 @@ export function Session({
                   1 / 2 / 3 Dragons for 4–6 / 7–9 / 10–12 players. Room coin
                   counts stay secret.
                 </p>
+                <p>
+                  Round table:{' '}
+                  {game.settings.roundTableUntimed
+                    ? `no timer; everyone must be ready${game.settings.roundTableHostAdvance ? ', or the host can start voting early' : ''}.`
+                    : `${game.settings.discussion} seconds, or until everyone is ready.`}
+                </p>
                 {host && game.phase === 'lobby' && (
                   <details>
                     <summary>Host settings</summary>
@@ -260,6 +274,7 @@ export function Session({
                 )}
                 {host &&
                   game.demo &&
+                  !untimed &&
                   !['lobby', 'over'].includes(game.phase) && (
                     <Button
                       className="secondary full"

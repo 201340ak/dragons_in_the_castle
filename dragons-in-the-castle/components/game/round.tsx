@@ -222,7 +222,7 @@ export function Round({
                 }).then((v) => {
                   if (v)
                     setNotice(
-                      'Your claim is posted. You may edit it until time runs out.',
+                      'Your claim is posted. You may edit it until voting starts.',
                     );
                 });
               }}
@@ -298,8 +298,76 @@ export function Round({
   return (
     <>
       {content}
+      {game.phase === 'discussion' && game.settings.roundTableUntimed && (
+        <RoundTableTiming game={game} send={send} disabled={disabled} />
+      )}
       {['vote', 'verdict'].includes(game.phase) && <Claims game={game} />}
     </>
+  );
+}
+function RoundTableTiming({
+  game,
+  send,
+  disabled,
+}: {
+  game: View;
+  send: Send;
+  disabled: boolean;
+}) {
+  const [confirming, setConfirming] = useState(false);
+  const waiting = game.players.filter((p) => p.active && !p.discussionReady);
+  const canAdvance =
+    game.me.id === game.host && game.settings.roundTableHostAdvance;
+  return (
+    <section className="round-table-timing" aria-label="Round table timing">
+      <p>
+        No timer. Voting starts when every active player has posted a claim and
+        marked ready.
+      </p>
+      {waiting.length > 0 && (
+        <p className="tiny">
+          Waiting for:{' '}
+          {waiting
+            .map((p) => `${p.name}${!p.online && !p.bot ? ' (offline)' : ''}`)
+            .join(', ')}
+          .
+        </p>
+      )}
+      {game.settings.roundTableHostAdvance && !canAdvance && (
+        <p className="tiny">The host can also start voting early.</p>
+      )}
+      {canAdvance &&
+        (confirming ? (
+          <div>
+            <p>
+              Start voting now? Players who are not ready will lose the chance
+              to edit claims or react.
+            </p>
+            <Button
+              className="primary full"
+              disabled={disabled}
+              onClick={() => void send('round-table-advance')}
+            >
+              Yes, start voting
+            </Button>
+            <Button
+              className="quiet full"
+              disabled={disabled}
+              onClick={() => setConfirming(false)}
+            >
+              Keep the Round table open
+            </Button>
+          </div>
+        ) : (
+          <Button
+            className="secondary full"
+            disabled={disabled}
+            onClick={() => setConfirming(true)}
+          >
+            Start voting early
+          </Button>
+        ))}
+    </section>
   );
 }
 function Claims({

@@ -1,4 +1,13 @@
 /* A compact controller layout, shared by web and the mobile bundle. */
+.round-table-timing {
+  padding: 16px;
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+.round-table-timing p {
+  overflow-wrap: anywhere;
+}
 .claim-reactions {
   display: flex;
   flex-wrap: wrap;

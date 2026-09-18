@@ -1,4 +1,5 @@
 'use client';
+import { useId } from 'react';
 import { Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -49,6 +50,7 @@ export function SettingsForm({
   value: Settings;
   onChange: (s: Settings) => void;
 }) {
+  const hostAdvanceId = useId();
   return (
     <div className="settings-grid">
       {(
@@ -65,6 +67,7 @@ export function SettingsForm({
           {label}
           <input
             type="number"
+            disabled={key === 'discussion' && value.roundTableUntimed}
             min={1}
             max={
               key === 'coins'
@@ -80,6 +83,44 @@ export function SettingsForm({
           />
         </label>
       ))}
+      <label className="wide">
+        Round table timing
+        <select
+          value={value.roundTableUntimed ? 'untimed' : 'timed'}
+          onChange={(e) =>
+            onChange({
+              ...value,
+              roundTableUntimed: e.target.value === 'untimed',
+            })
+          }
+        >
+          <option value="timed">
+            Timed · end early when everyone is ready
+          </option>
+          <option value="untimed">
+            No timer · wait until everyone is ready
+          </option>
+        </select>
+      </label>
+      {value.roundTableUntimed && (
+        <>
+          <label className="checkrow wide" htmlFor={hostAdvanceId}>
+            <Checkbox
+              id={hostAdvanceId}
+              checked={value.roundTableHostAdvance ?? false}
+              onCheckedChange={(checked) =>
+                onChange({ ...value, roundTableHostAdvance: checked })
+              }
+            />
+            Allow the host to start voting before everyone is ready
+          </label>
+          <p className="wide tiny">
+            Everyone must post a claim and mark ready. Disconnected players keep
+            their seats. Only the Round table is untimed; choosing actions and
+            voting still have timers.
+          </p>
+        </>
+      )}
       <p className="wide">
         Dragons: 1 for 4–6 players, 2 for 7–9, 3 for 10–12.
       </p>

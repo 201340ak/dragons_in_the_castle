@@ -3,6 +3,82 @@ import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 const base = process.env.TEST_URL || 'http://localhost:3000';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+void test('live untimed Round table persists anonymous reactions and enforces claim revisions and host advancement', async () => {
+  const { tokens, code, g } = await group({
+    discussion: 1,
+    roundTableUntimed: true,
+    roundTableHostAdvance: true,
+    vote: 120,
+  });
+  const send = (i, type, phase, extra = {}, ok = true) =>
+    api(tokens[i], { code, round: g.round, type, phase, ...extra }, ok);
+  for (let i = 0; i < 4; i++)
+    await send(i, 'action', 'selection', {
+      room: 'Tower',
+      action: 'Count Coins',
+    });
+  for (let i = 0; i < 4; i++) await send(i, 'ack', 'results');
+  await sleep(1100);
+  let state = await api(tokens[0], { type: 'sync', code });
+  assert.equal(state.phase, 'discussion');
+  assert.equal(state.deadline, 0);
+  const claim = {
+    room: 'Tower',
+    action: 'Count Coins',
+    result: 'Ten',
+    statement: '',
+  };
+  state = await send(0, 'claim', 'discussion', claim);
+  const hostId = state.me.id;
+  const reaction = { target: hostId, reaction: 'interesting', claimVersion: 1 };
+  await Promise.all([
+    send(1, 'claim-reaction', 'discussion', reaction),
+    send(2, 'claim-reaction', 'discussion', reaction),
+  ]);
+  state = await api(tokens[3], { type: 'sync', code });
+  assert.equal(state.claimReactions[hostId].counts.interesting, 2);
+  assert.equal(state.claimReactions[hostId].mine, null);
+  assert.deepEqual(Object.keys(state.claimReactions[hostId]).sort(), [
+    'counts',
+    'mine',
+    'version',
+  ]);
+  const reconnect = await api(tokens[1], { type: 'sync', code });
+  assert.equal(reconnect.claimReactions[hostId].mine, 'interesting');
+  await send(1, 'claim-reaction', 'discussion', {
+    ...reaction,
+    reaction: null,
+  });
+  state = await send(0, 'claim', 'discussion', { ...claim, result: 'Nine' });
+  assert.equal(state.claimReactions[hostId].counts.interesting, 0);
+  await send(1, 'claim-reaction', 'discussion', reaction, false);
+  await api(
+    tokens[1],
+    {
+      type: 'claim-reaction',
+      code,
+      round: g.round - 1,
+      phase: 'discussion',
+      ...reaction,
+      claimVersion: 2,
+    },
+    false,
+  );
+  await send(1, 'round-table-advance', 'discussion', {}, false);
+  await send(0, 'round-table-advance', 'results', {}, false);
+  state = await send(0, 'round-table-advance', 'discussion');
+  assert.equal(state.phase, 'vote');
+  assert(state.deadline > state.serverTime);
+  await send(
+    2,
+    'claim-reaction',
+    'discussion',
+    { ...reaction, claimVersion: 2 },
+    false,
+  );
+  await send(0, 'round-table-advance', 'discussion', {}, false);
+});
 async function api(token, body, ok = true) {
   const r = await fetch(base + '/api/game', {
     method: 'POST',

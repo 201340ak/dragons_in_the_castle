@@ -67,6 +67,8 @@ export type Settings = {
   stealMax: number;
   selection: number;
   discussion: number;
+  roundTableUntimed: boolean;
+  roundTableHostAdvance: boolean;
   vote: number;
   dragons: number[];
   reveal: boolean;
@@ -126,6 +128,8 @@ export const defaults: Settings = {
   stealMax: 3,
   selection: 60,
   discussion: 90,
+  roundTableUntimed: false,
+  roundTableHostAdvance: false,
   vote: 45,
   dragons: [1, 2, 3],
   reveal: false,
@@ -186,7 +190,10 @@ export function settings(input: Partial<Settings> = {}): Settings {
     'Use 1–8 unique room names.',
   );
   ensure(
-    typeof s.clue === 'boolean' && typeof s.reveal === 'boolean',
+    typeof s.clue === 'boolean' &&
+      typeof s.reveal === 'boolean' &&
+      typeof s.roundTableUntimed === 'boolean' &&
+      typeof s.roundTableHostAdvance === 'boolean',
     'Invalid settings.',
   );
   return s;
@@ -288,7 +295,11 @@ const active = (g: Game) => g.players.filter((p) => p.active);
 const current = (g: Game) => g.history[g.history.length - 1];
 function phase(g: Game, p: Phase, now: number, seconds: number) {
   g.phase = p;
-  g.deadline = now + seconds * 1000;
+  // Zero is the serializable no-deadline sentinel only for an untimed Round table.
+  g.deadline =
+    p === 'discussion' && g.settings.roundTableUntimed
+      ? 0
+      : now + seconds * 1000;
   g.ack = [];
 }
 function nextRound(g: Game, now: number) {
@@ -439,7 +450,9 @@ export function tick(g: Game, now: number) {
             : candidates[(g.round + g.players.indexOf(p)) % candidates.length]
                 ?.id || 'skip';
       }
-  const expired = now >= g.deadline;
+  const expired =
+    !(g.phase === 'discussion' && g.settings.roundTableUntimed) &&
+    now >= g.deadline;
   if (
     g.phase === 'reveal' &&
     (expired || active(g).every((p) => p.bot || g.ack.includes(p.id)))
@@ -476,6 +489,12 @@ function botResult(r: Result) {
   if (r.groups)
     return `I found ${r.groups.protective} protective, ${r.groups.informational} informational, and ${r.groups.unknown} unknown actions. ${company}`;
   return company;
+}
+function roundTableOpen(g: Game, now: number) {
+  return (
+    g.phase === 'discussion' &&
+    (g.settings.roundTableUntimed || now < g.deadline)
+  );
 }
 export function command(
   g: Game,
@@ -577,10 +596,7 @@ export function command(
       break;
     case 'claim':
       playing();
-      ensure(
-        g.phase === 'discussion' && now < g.deadline,
-        'The Round table has ended.',
-      );
+      ensure(roundTableOpen(g, now), 'The Round table has ended.');
       ensure(
         body.room &&
           body.action &&
@@ -607,10 +623,7 @@ export function command(
       break;
     case 'claim-reaction': {
       playing();
-      ensure(
-        g.phase === 'discussion' && now < g.deadline,
-        'The Round table has ended.',
-      );
+      ensure(roundTableOpen(g, now), 'The Round table has ended.');
       const target = body.target;
       ensure(
         target &&
@@ -636,14 +649,21 @@ export function command(
     }
     case 'discussion-ready':
       playing();
-      ensure(
-        g.phase === 'discussion' && now < g.deadline,
-        'The Round table has ended.',
-      );
+      ensure(roundTableOpen(g, now), 'The Round table has ended.');
       ensure(r.claims[id], 'Post a claim before getting ready to vote.');
       ensure(typeof body.ready === 'boolean', 'Choose your readiness.');
       g.ack = g.ack.filter((playerId) => playerId !== id);
       if (body.ready) g.ack.push(id);
+      break;
+    case 'round-table-advance':
+      host();
+      ensure(
+        g.phase === 'discussion' &&
+          g.settings.roundTableUntimed &&
+          g.settings.roundTableHostAdvance,
+        'Host advancement is not enabled for this Round table.',
+      );
+      phase(g, 'vote', now, g.settings.vote);
       break;
     case 'vote-intent':
       playing();
@@ -680,6 +700,10 @@ export function command(
     case 'demo-next':
       host();
       ensure(g.demo, 'Only available in a bot game.');
+      ensure(
+        !(g.phase === 'discussion' && g.settings.roundTableUntimed),
+        'Use Round table readiness or its configured host advancement.',
+      );
       g.deadline = now;
       break;
     case 'again':

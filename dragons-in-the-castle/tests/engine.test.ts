@@ -137,6 +137,121 @@ void test('claim reactions are anonymous, changeable, removable and survive reco
   assert.equal('reactions' in view(g, 'p0', 8).history![0], false);
 });
 
+function untimedTable(hostAdvance = false) {
+  const g = game();
+  g.settings = settings({
+    roundTableUntimed: true,
+    roundTableHostAdvance: hostAdvance,
+  });
+  resolve(g, 2);
+  for (const p of g.players) command(g, p.id, { type: 'ack' }, 3);
+  assert.equal(g.phase, 'discussion');
+  assert.equal(g.deadline, 0);
+  return g;
+}
+
+void test('Round table settings preserve timed legacy games and reject malformed flags', () => {
+  assert.equal(settings({ discussion: 90 }).roundTableUntimed, false);
+  assert.equal(settings({}).roundTableHostAdvance, false);
+  assert.throws(() => settings({ roundTableUntimed: 'yes' as never }));
+  assert.throws(() => settings({ roundTableHostAdvance: 1 as never }));
+  const g = untimedTable();
+  assert.throws(() =>
+    command(
+      g,
+      'p0',
+      { type: 'settings', settings: { roundTableUntimed: false } },
+      4,
+    ),
+  );
+});
+
+void test('untimed Round table survives days offline, accepts edits and reactions, then advances on readiness', () => {
+  let g = untimedTable();
+  const later = 3 * 86400000;
+  g = JSON.parse(JSON.stringify(g));
+  tick(g, later);
+  assert.equal(g.phase, 'discussion');
+  assert.equal(g.deadline, 0);
+  assert.throws(() =>
+    command(g, 'p0', { type: 'discussion-ready', ready: true }, later),
+  );
+  const claim = {
+    type: 'claim',
+    room: 'Tower',
+    action: 'Count Coins' as const,
+    result: 'Ten',
+    statement: '',
+  };
+  for (const p of g.players) command(g, p.id, claim, later + 1);
+  command(g, 'p0', { type: 'discussion-ready', ready: true }, later + 2);
+  command(g, 'p0', { ...claim, result: 'Nine' }, later + 3);
+  assert.equal(g.ack.includes('p0'), false);
+  command(
+    g,
+    'p1',
+    {
+      type: 'claim-reaction',
+      target: 'p0',
+      claimVersion: 2,
+      reaction: 'skeptical',
+    },
+    later + 4,
+  );
+  command(g, 'p0', { type: 'discussion-ready', ready: true }, later + 5);
+  command(g, 'p0', { type: 'discussion-ready', ready: false }, later + 6);
+  assert.equal(g.ack.includes('p0'), false);
+  for (const p of g.players.slice(0, 3))
+    command(g, p.id, { type: 'discussion-ready', ready: true }, later + 7);
+  tick(g, later * 2);
+  assert.equal(g.phase, 'discussion');
+  command(g, 'p3', { type: 'discussion-ready', ready: true }, later * 2 + 1);
+  assert.equal(g.phase, 'vote');
+  assert.equal(g.deadline, later * 2 + 1 + g.settings.vote * 1000);
+});
+
+void test('host advancement is opt-in, host-only, phase-bound and works for a banished host', () => {
+  const locked = untimedTable();
+  assert.throws(() =>
+    command(locked, 'p0', { type: 'round-table-advance' }, 4),
+  );
+  locked.demo = true;
+  assert.throws(() => command(locked, 'p0', { type: 'demo-next' }, 4));
+  const g = untimedTable(true);
+  assert.throws(() => command(g, 'p1', { type: 'round-table-advance' }, 4));
+  g.players[0].active = false;
+  command(g, 'p0', { type: 'round-table-advance' }, 5);
+  assert.equal(g.phase, 'vote');
+  assert.throws(() => command(g, 'p0', { type: 'round-table-advance' }, 6));
+  const timed = game();
+  timed.phase = 'discussion';
+  timed.settings.roundTableHostAdvance = true;
+  assert.throws(() => command(timed, 'p0', { type: 'round-table-advance' }, 5));
+});
+
+void test('untimed readiness ignores spectators and bots post claims automatically', () => {
+  const g = untimedTable();
+  g.players[3].active = false;
+  g.players[2].bot = true;
+  for (const p of g.players.slice(0, 2)) {
+    command(
+      g,
+      p.id,
+      {
+        type: 'claim',
+        room: 'Tower',
+        action: 'Count Coins',
+        result: 'Ten',
+        statement: '',
+      },
+      10,
+    );
+    command(g, p.id, { type: 'discussion-ready', ready: true }, 11);
+  }
+  assert.equal(g.phase, 'vote');
+  assert.ok(g.history[0].claims.p2);
+});
+
 void test('reaction permissions and claim version prevent stale endorsements', () => {
   const g = game();
   g.phase = 'discussion';
