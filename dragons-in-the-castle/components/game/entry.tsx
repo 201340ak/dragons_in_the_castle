@@ -11,6 +11,7 @@ import {
   type DevAccount,
 } from '@/lib/entitlements';
 import { SettingsForm, type Send } from './shared';
+import { ModePicker } from './mode-picker';
 
 type Mode = 'join' | 'host' | 'bots';
 
@@ -151,10 +152,13 @@ export function Entry({
               />
             </label>
           ) : (
-            <details className="entry-settings">
-              <summary>Customize game settings</summary>
-              <SettingsForm value={config} onChange={setConfig} />
-            </details>
+            <>
+              <ModePicker disabled={busy} />
+              <details className="entry-settings">
+                <summary>Customize game settings</summary>
+                <SettingsForm value={config} onChange={setConfig} />
+              </details>
+            </>
           )}
           <Button
             type="submit"

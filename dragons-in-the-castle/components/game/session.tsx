@@ -11,6 +11,7 @@ import {
 import type { View } from '@/lib/engine';
 import { AvatarBadge, SettingsForm, resultText, type Send } from './shared';
 import { Lobby } from './lobby';
+import { ModePicker } from './mode-picker';
 const titles: Record<string, string> = {
   lobby: 'Lobby',
   reveal: 'Your role',
@@ -260,6 +261,7 @@ export function Session({
                 {host && game.phase === 'lobby' && (
                   <details>
                     <summary>Host settings</summary>
+                    <ModePicker disabled={busy || offline} />
                     <SettingsForm value={config} onChange={setConfig} />
                     <Button
                       className="primary full"

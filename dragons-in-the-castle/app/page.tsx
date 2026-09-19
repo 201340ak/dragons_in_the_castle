@@ -65,7 +65,6 @@ export default function Home() {
         ) : (
           <div className="header-actions entry-header-actions">
             <AccountMenu concealed={hidden} />
-            <span className="eyebrow">A GAME OF SECRETS & SUSPICION</span>
             <Button
               className="quiet theme-toggle"
               onClick={toggleTheme}

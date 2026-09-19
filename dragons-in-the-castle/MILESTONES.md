@@ -141,3 +141,7 @@ Round table publication verified: both implementation milestones were pushed to 
 ## Mobile readability — Milestone 1
 Complete: room attendance is off by default and host-configurable. Hidden attendance is omitted from private result payloads, endgame result history and newly generated bot claims, including filtering older stored results. Investigation action clues retain their separate existing setting. Game mode defaults to Steal the Treasure and unsupported modes are rejected server-side.
 Checks: TypeScript, lint and 54 automated tests pass. Remaining: mobile list layouts/mode picker milestone, runtime regression checks, push and deployment.
+
+## Mobile readability — Milestone 2
+Complete: phone layouts use one-column room/action/player/settings lists, readable labels, fixed-size art and portraits, selected-room portrait placement inside its row, and room effects in their own row. Header tagline removed. Host and bot-game setup show Steal the Treasure selected and Eat the King disabled with Coming soon; the mode is also shown in lobby settings.
+Checks: lint, 54 automated tests, web/mobile builds, HTTP 200 homepage and all six local production-runtime API checks pass. Attendance behavior is checked both off and on. No browser visual/device playthrough was performed. Remaining: requested push/deploy and hosted regression verification.

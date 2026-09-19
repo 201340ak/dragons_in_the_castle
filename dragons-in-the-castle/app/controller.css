@@ -1,4 +1,58 @@
 /* A compact controller layout, shared by web and the mobile bundle. */
+.castle-list-pawn {
+  display: none;
+}
+.game-mode-picker {
+  border: 0;
+  padding: 0;
+  margin: 20px 0;
+  min-width: 0;
+}
+.game-mode-picker legend {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.game-mode-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 80px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.game-mode-option > svg,
+.game-mode-option [data-slot='radio-group-item'] {
+  flex-shrink: 0;
+}
+.game-mode-option > span {
+  flex: 1;
+  min-width: 0;
+}
+.game-mode-option strong,
+.game-mode-option small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.game-mode-option strong {
+  font-size: 1rem;
+}
+.game-mode-option small {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+.game-mode-option.selected {
+  border-color: var(--primary);
+}
+.game-mode-option.unavailable {
+  color: var(--muted-foreground);
+  cursor: not-allowed;
+}
+.game-mode-option:focus-within {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
 .round-table-timing {
   padding: 16px;
   margin-top: 16px;
@@ -1080,5 +1134,183 @@
   }
   .controller-app .castle-round-track > div span {
     text-align: left;
+  }
+}
+
+/* Phone controls use full-width rows; fixed-size portraits/art never stretch. */
+@media (max-width: 640px) {
+  .controller-app {
+    padding-inline: 12px;
+  }
+  .controller-app > header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .controller-app .header-actions {
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+  .controller-app .header-actions button {
+    min-height: 44px;
+  }
+  .controller-app .panel {
+    padding: 18px;
+  }
+  .controller-app .player-grid,
+  .controller-app .room-grid,
+  .controller-app .castle-rooms,
+  .controller-app .action-hand,
+  .controller-app .settings-grid,
+  .controller-sheet .settings-grid,
+  .controller-app .resolution-clues {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .controller-app .player-tile {
+    padding: 12px;
+    gap: 12px;
+    min-height: 72px;
+    align-items: center;
+  }
+  .controller-app .player-tile > div {
+    min-width: 0;
+    flex: 1;
+  }
+  .controller-app .player-tile strong {
+    font-size: 1rem;
+  }
+  .controller-app .player-tile small {
+    font-size: 0.875rem;
+  }
+  .controller-app .player-tile .avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    flex: 0 0 40px;
+    font-size: 24px;
+    aspect-ratio: 1;
+  }
+  .controller-app .player-tile button {
+    min-width: 44px;
+    min-height: 44px;
+    flex-shrink: 0;
+  }
+  .controller-app .castle-pawn {
+    display: none;
+  }
+  .controller-app .castle-list-pawn {
+    display: inline-flex;
+    flex: 0 0 32px;
+  }
+  .controller-app .castle-list-pawn .avatar {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    font-size: 21px;
+    flex-shrink: 0;
+  }
+  .controller-app .castle-room {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+    height: auto;
+    min-height: 80px;
+    border-radius: 10px;
+  }
+  .controller-app .castle-interior {
+    position: relative;
+    inset: auto;
+    width: 76px;
+    height: 80px;
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+  }
+  .controller-app .castle-room-label {
+    position: relative;
+    inset: auto;
+    grid-column: 2;
+    grid-row: 1;
+    gap: 10px;
+    padding: 12px;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+  .controller-app .castle-room-label > span:first-child {
+    flex: 1;
+  }
+  .controller-app .room-resolution-effect {
+    position: relative;
+    inset: auto;
+    grid-column: 1 / -1;
+    min-height: 88px;
+    margin: 8px;
+    padding: 10px;
+  }
+  .controller-app .room-resolution-effect > span {
+    font-size: 0.875rem;
+  }
+  .controller-app .table-action-card {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    min-height: 90px;
+  }
+  .controller-app .table-action-art {
+    width: 76px;
+    height: 88px;
+    grid-column: 1;
+    grid-row: 1 / 3;
+    align-self: start;
+  }
+  .controller-app .table-action-title {
+    grid-column: 2;
+    padding: 12px 12px 4px;
+    gap: 10px;
+    font-size: 1rem;
+    align-items: center;
+  }
+  .controller-app .table-action-title strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .controller-app .table-action-card small {
+    grid-column: 2;
+    padding: 0 12px 12px;
+    font-size: 0.875rem;
+  }
+  .controller-app .table-action-card.chosen {
+    transform: none;
+  }
+  .controller-app .hand-heading {
+    flex-wrap: wrap;
+  }
+  .controller-app .castle-board-caption {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .controller-app .controller-phase {
+    align-items: flex-start;
+  }
+  .controller-app .controller-clock {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .controller-app .vote-candidate-top strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .controller-app .vote-counts {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .controller-app .castle-round-track ol {
+    flex-wrap: wrap;
+  }
+  .controller-app .castle-round-track li {
+    flex: 1 1 auto;
+    white-space: nowrap;
+  }
+  .controller-app button {
+    white-space: normal;
   }
 }

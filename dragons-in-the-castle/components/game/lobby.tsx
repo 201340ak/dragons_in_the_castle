@@ -16,7 +16,7 @@ export function Lobby({
     <div className="panel">
       <div className="row">
         <div>
-          <span className="eyebrow">THE ROUND TABLE</span>
+          <span className="eyebrow">STEAL THE TREASURE</span>
           <h2>{game.players.length} adventurers have arrived</h2>
         </div>
         <Users size={30} />

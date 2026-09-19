@@ -42,6 +42,11 @@ export function CastleBoard({
       {selected === room && roomEffect}
       <span className="castle-room-label">
         <span>{room}</span>
+        {selected === room && (
+          <span className="castle-list-pawn" aria-label="Your selected room">
+            <AvatarBadge player={player} />
+          </span>
+        )}
         {!resultMode && (
           <RadioGroupItem id={'castle-room-' + index} value={room} />
         )}
@@ -92,7 +97,9 @@ export function CastleBoard({
       <p className="castle-location" aria-live="polite">
         {selected
           ? `${resultMode ? 'Your room' : 'Your doorway'}: ${selected}`
-          : resultMode ? 'You stayed outside this round.' : 'Tap a room to choose your destination.'}
+          : resultMode
+            ? 'You stayed outside this round.'
+            : 'Tap a room to choose your destination.'}
       </p>
     </div>
   );
