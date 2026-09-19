@@ -178,6 +178,9 @@ void test('live four-player round: private roles, concurrent actions, lying clai
   g = await api(tokens[wizard], { type: 'sync', code });
   assert.equal(g.phase, 'results');
   assert.equal(g.me.result.coins, 8);
+  assert.equal(g.settings.showRoomAttendance, false);
+  assert.equal(g.settings.gameMode, 'steal-the-treasure');
+  assert.equal('others' in g.me.result, false);
   const rejoin = await api(tokens[wizard], {
     type: 'join',
     code,
@@ -268,6 +271,7 @@ void test('live deadlines advance without missing players and reject stale submi
 
 void test('live selection stays private until the last player, then freezes', async () => {
   const { tokens, code, g } = await group({
+    showRoomAttendance: true,
     selection: 120,
     stealMin: 2,
     stealMax: 5,

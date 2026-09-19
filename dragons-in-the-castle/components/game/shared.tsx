@@ -51,6 +51,7 @@ export function SettingsForm({
   onChange: (s: Settings) => void;
 }) {
   const hostAdvanceId = useId();
+  const attendanceId = useId();
   return (
     <div className="settings-grid">
       {(
@@ -147,13 +148,23 @@ export function SettingsForm({
         />{' '}
         Investigation action clues
       </label>
+      <label className="checkrow wide" htmlFor={attendanceId}>
+        <Checkbox
+          id={attendanceId}
+          checked={value.showRoomAttendance ?? false}
+          onCheckedChange={(checked) =>
+            onChange({ ...value, showRoomAttendance: checked })
+          }
+        />
+        Show how many other players entered your room
+      </label>
     </div>
   );
 }
 export function resultText(r?: Result) {
   if (!r)
     return 'You missed the selection deadline. You stayed outside this round.';
-  return `${r.others} other ${r.others === 1 ? 'player entered' : 'players entered'} ${r.room}. ${r.coins !== undefined ? `${r.coins} coins remain.` : ''}${r.action === 'Guard Room' ? (r.blocked ? ' You blocked at least one theft.' : ' No theft was attempted here.') : ''}${r.stolen !== undefined ? ` You stole ${r.stolen} coins.${r.blocked ? ' The room was guarded.' : ''}` : ''}${r.groups ? ` Actions: ${r.groups.protective} protective, ${r.groups.informational} informational, ${r.groups.unknown} unknown.` : ''}`;
+  return `${r.others === undefined ? `${r.room}.` : `${r.others} other ${r.others === 1 ? 'player entered' : 'players entered'} ${r.room}.`} ${r.coins !== undefined ? `${r.coins} coins remain.` : ''}${r.action === 'Guard Room' ? (r.blocked ? ' You blocked at least one theft.' : ' No theft was attempted here.') : ''}${r.stolen !== undefined ? ` You stole ${r.stolen} coins.${r.blocked ? ' The room was guarded.' : ''}` : ''}${r.groups ? ` Actions: ${r.groups.protective} protective, ${r.groups.informational} informational, ${r.groups.unknown} unknown.` : ''}`;
 }
 export function Gold({ rooms }: { rooms: Record<string, number> }) {
   return (

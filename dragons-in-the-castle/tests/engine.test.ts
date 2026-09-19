@@ -291,6 +291,7 @@ void test('reaction permissions and claim version prevent stale endorsements', (
 });
 void test('successful theft and count after simultaneous resolution', () => {
   const g = game();
+  g.settings.showRoomAttendance = true;
   g.history[0].choices = {
     p0: { room: 'Treasury', action: 'Steal Coins' },
     p1: { room: 'Treasury', action: 'Count Coins' },
@@ -299,6 +300,33 @@ void test('successful theft and count after simultaneous resolution', () => {
   assert.equal(g.rooms.Treasury, 8);
   assert.equal(g.history[0].results.p1.coins, 8);
   assert.equal(g.history[0].results.p0.others, 1);
+});
+
+void test('room attendance is opt-in and legacy private results are filtered', () => {
+  assert.equal(settings({}).showRoomAttendance, false);
+  assert.equal(settings({}).gameMode, 'steal-the-treasure');
+  assert.throws(() => settings({ showRoomAttendance: 'true' as never }));
+  assert.throws(() => settings({ gameMode: 'eat-the-king' as never }));
+  const g = game();
+  g.history[0].choices = {
+    p0: { room: 'Tower', action: 'Guard Room' },
+    p1: { room: 'Tower', action: 'Count Coins' },
+  };
+  resolve(g, 2);
+  assert.equal('others' in view(g, 'p1', 3).me.result!, false);
+  assert.equal(view(g, 'p1', 3).me.result!.coins, 10);
+  // A saved game from before this setting may contain the old attendance field.
+  g.history[0].results.p1.others = 1;
+  assert.equal('others' in view(g, 'p1', 3).me.result!, false);
+  g.players[1].bot = true;
+  g.phase = 'discussion';
+  g.deadline = 10000;
+  tick(g, 4);
+  assert.doesNotMatch(g.history[0].claims.p1.result, /other player/);
+  g.phase = 'over';
+  assert.equal('others' in view(g, 'p1', 5).history![0].results.p1, false);
+  g.settings.showRoomAttendance = true;
+  assert.equal(view(g, 'p1', 5).me.result!.others, 1);
 });
 void test('guard blocks all theft and reports attempts', () => {
   const g = game();
@@ -561,6 +589,7 @@ void test('scarce coins are awarded by shuffled priority, not submission order',
 
 void test('investigation waits for the final human and includes late entrants', () => {
   const g = game();
+  g.settings.showRoomAttendance = true;
   command(g, 'p1', { type: 'action', room: 'Tower', action: 'Investigate' }, 2);
   command(
     g,

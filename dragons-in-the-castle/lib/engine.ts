@@ -61,6 +61,8 @@ export const PLAYER_AVATARS = [
   '🧭',
 ] as const;
 export type Settings = {
+  gameMode: 'steal-the-treasure';
+  showRoomAttendance: boolean;
   coins: number;
   steal: number;
   stealMin: number;
@@ -79,7 +81,7 @@ export type Choice = { room: string; action: Action; amount?: number };
 export type Result = {
   room: string;
   action: Action;
-  others: number;
+  others?: number;
   coins?: number;
   blocked?: boolean;
   stolen?: number;
@@ -122,6 +124,8 @@ export type Game = {
 };
 const BOT_NAMES = PLAYER_NAMES;
 export const defaults: Settings = {
+  gameMode: 'steal-the-treasure',
+  showRoomAttendance: false,
   coins: 10,
   steal: 2,
   stealMin: 1,
@@ -142,6 +146,14 @@ export function ensure(value: unknown, message: string): asserts value {
 }
 export function settings(input: Partial<Settings> = {}): Settings {
   const s = { ...defaults, ...input };
+  ensure(
+    s.gameMode === 'steal-the-treasure',
+    'That game mode is not available yet.',
+  );
+  ensure(
+    typeof s.showRoomAttendance === 'boolean',
+    'Choose whether to show room attendance.',
+  );
   // Legacy saved games and older clients supplied a single theft amount.
   if (
     input.stealMin === undefined &&
@@ -352,7 +364,9 @@ export function resolve(
       const out: Result = {
         room,
         action: c.action,
-        others: entries.length - 1,
+        ...(g.settings.showRoomAttendance
+          ? { others: entries.length - 1 }
+          : {}),
       };
       if (c.action === 'Steal Coins') {
         out.stolen = guarded
@@ -433,7 +447,7 @@ export function tick(g: Game, now: number) {
           room: choice?.room || g.settings.rooms[0],
           action: truthful ? choice.action : 'Count Coins',
           result: truthful
-            ? botResult(result)
+            ? botResult(privateResult(result, g.settings.showRoomAttendance))
             : 'I counted the coins. Nothing seemed out of place.',
           statement: '',
         };
@@ -481,8 +495,16 @@ export function tick(g: Game, now: number) {
   )
     nextRound(g, now);
 }
+function privateResult(result: Result, showAttendance = false): Result {
+  if (showAttendance) return result;
+  const { others: _others, ...privateFields } = result;
+  return privateFields;
+}
 function botResult(r: Result) {
-  const company = `${r.others} other ${r.others === 1 ? 'player was' : 'players were'} there.`;
+  const company =
+    r.others === undefined
+      ? ''
+      : `${r.others} other ${r.others === 1 ? 'player was' : 'players were'} there.`;
   if (r.coins !== undefined) return `${r.coins} coins remained. ${company}`;
   if (r.action === 'Guard Room')
     return `${r.blocked ? 'I stopped a theft.' : 'No theft was attempted.'} ${company}`;
@@ -776,7 +798,10 @@ export function view(g: Game, id: string, now: number) {
               g.settings.rooms.map((room) => [room, theftBounds(g, room)]),
             )
           : undefined,
-      result: g.phase !== 'selection' ? r?.results[id] : undefined,
+      result:
+        g.phase !== 'selection' && r?.results[id]
+          ? privateResult(r.results[id], g.settings.showRoomAttendance)
+          : undefined,
       voted: !!r?.votes[id],
       voteTarget:
         g.phase === 'vote' ? r?.votes[id] || r?.voteIntents?.[id] : undefined,
@@ -823,9 +848,15 @@ export function view(g: Game, id: string, now: number) {
       : undefined,
     ...(g.phase === 'over'
       ? {
-          history: g.history.map(
-            ({ reactions: _reactions, ...round }) => round,
-          ),
+          history: g.history.map(({ reactions: _reactions, ...round }) => ({
+            ...round,
+            results: Object.fromEntries(
+              Object.entries(round.results).map(([playerId, result]) => [
+                playerId,
+                privateResult(result, g.settings.showRoomAttendance),
+              ]),
+            ),
+          })),
           coins: g.rooms,
         }
       : {}),
